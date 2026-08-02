@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+*.rpk
+*.rpk.bak
+sign/
+*.pem
+.DS_Store
+Thumbs.db
+*.log
