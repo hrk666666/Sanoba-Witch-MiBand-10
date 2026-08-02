@@ -316,7 +316,8 @@ Sanoba-Witch-MiBand-10/
 ### 技术支持
 - [liuyuze61](https://github.com/liuyuze61)：部分代码与逻辑参考
 - **Gemini**：AI 代码辅助
-
+- **MIMO**：适配环 10 辅助
+- 
 ### 工具链
 - [GARbro-Mod](https://github.com/crskycode/GARbro) & [FreeMote](https://github.com/UlyssesWu/FreeMote)：游戏资源转换
 - [KrkrExtract](https://github.com/xmoezzz/KrkrExtract)：KiriKiri 引擎资源提取
