@@ -8,13 +8,23 @@
 
 原版项目为小米手环 9 Pro 开发，本项目针对手环 10 的屏幕尺寸和交互特性进行了适配调整。
 
-## 预览
+## ⚠️ 版权声明
 
-<img src="screenshots/index.png" width="160"> <img src="screenshots/menu.png" width="160"> <img src="screenshots/choice.png" width="160"> <img src="screenshots/about.png" width="160">
+**本仓库仅包含自行编写的源代码、脚本及工具，不包含任何原作游戏资源。**
+
+本项目代码以 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html) 协议开源。
+
+**游戏内容版权说明：**
+- 《魔女的夜宴》（サノバウィッチ）是 **Yuzusoft（柚子社）** 的商业作品，游戏剧情、角色、美术素材等一切游戏内容版权归 Yuzusoft 所有
+- 本项目**不内置、不附带、不分发**任何原作游戏资源（剧本、图片、音频等）
+- 如需运行本项目，请自行获取正版游戏资源并进行转换
+- **请勿将本项目用于任何商业用途**
+- **请在支持正版的前提下进行研究与学习**
+- 若相关权利方认为本项目存在侵权行为，请联系删除
 
 ## 已实现功能
 
-- [x] 完整剧本
+- [x] 完整剧本（需自行准备）
 - [x] UI 交互（适配手环 10 窄屏）
 - [x] 背景渲染
 - [x] 存档与设置
@@ -24,8 +34,6 @@
 
 - [ ] 特殊 CG 与鉴赏
 - [ ] 人物立绘渲染
-- [ ] 隐藏 UI 按钮
-- [ ] 快进按钮
 
 ## 安装
 
@@ -55,11 +63,29 @@ npm run build
 npm run release
 ```
 
-## 剧本转换
+## 资源准备
 
-项目提供了一个剧本转换工具，位于 `tools/convert_script.py`，用于将原始剧本转换为紧凑的数组格式。
+**注意：本仓库不包含任何原作游戏资源。** 运行前需自行准备以下资源：
 
-输入文件应为 `.json` 格式，可通过 [FreeMote](https://github.com/UlyssesWu/FreeMote) 中的 `PsbDecompile.exe` 将原始 `.scn` 文件转换为 `.json`。
+1. 拥有正版《魔女的夜宴》游戏
+2. 使用 [KrkrExtract](https://github.com/xmoezzz/KrkrExtract) 提取游戏资源
+3. 使用 [FreeMote](https://github.com/UlyssesWu/FreeMote) 中的 `PsbDecompile.exe` 将 `.scn` 剧本文件转换为 `.json`
+4. 使用本项目提供的 `tools/convert_script.py` 将 `.json` 转换为紧凑数组格式，放入 `src/common/scn/`
+5. 将背景图片处理后放入 `src/common/bg/`
+
+### 资源目录结构
+
+```
+src/common/
+├── bg/       # 背景图片（.jpg）
+├── scn/      # 剧本数据（.txt，convert_script.py 输出）
+├── logo.png  # 应用图标
+└── title_bg.png  # 标题背景
+```
+
+## 剧本转换工具
+
+`tools/convert_script.py` 用于将原始剧本转换为紧凑的数组格式，以适配手环有限的存储空间。
 
 ```bash
 python tools/convert_script.py <输入路径> <输出路径>
@@ -84,8 +110,8 @@ python tools/convert_script.py <输入路径> <输出路径>
 │   ├── app.ux                 # 应用入口
 │   ├── manifest.json          # 应用配置
 │   ├── common/
-│   │   ├── bg/                # 背景图片
-│   │   ├── scn/               # 剧本数据（.txt）
+│   │   ├── bg/                # 背景图片（需自行准备）
+│   │   ├── scn/               # 剧本数据（需自行准备）
 │   │   ├── constants.js       # 配置常量
 │   │   ├── logo.png           # 应用图标
 │   │   └── title_bg.png       # 标题背景
@@ -97,7 +123,6 @@ python tools/convert_script.py <输入路径> <输出路径>
 │       └── about/             # 关于页面
 ├── tools/
 │   └── convert_script.py      # 剧本转换工具
-├── screenshots/               # 截图预览
 ├── LICENSE
 └── package.json
 ```
@@ -119,15 +144,6 @@ python tools/convert_script.py <输入路径> <输出路径>
 - [GARbro-Mod](https://github.com/crskycode/GARbro) & [FreeMote](https://github.com/UlyssesWu/FreeMote)：资源转换
 - [KrkrExtract](https://github.com/xmoezzz/KrkrExtract)：资源提取
 - [FFmpeg](https://ffmpeg.org/)：图片处理
-
-## 免责声明
-
-仓库内的所有源代码、脚本等均以 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html) 协议开源。
-
-仓库内 `src/common/` 目录下的所有游戏素材版权均归 Yuzusoft 所有。
-- 这些资源不属于开源范畴
-- 内置资源仅用于技术展示，请勿将其用于任何非法或商业用途
-- 请在支持正版的前提下进行研究，若相关权利方认为本项目侵权，请联系删除
 
 ## 相关链接
 
