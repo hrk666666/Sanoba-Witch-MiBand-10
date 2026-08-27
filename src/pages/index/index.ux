@@ -1,0 +1,145 @@
+<template>
+  <div @swipe="handleSwipe">
+    <!-- 背景 -->
+    <image class="bg-image" src="/common/title_bg.jpg"></image>
+
+    <!-- 按钮区域 - flex 自适应布局（手环 9/10 通吃） -->
+    <div class="button-container">
+      <stack class="stack-button" @click="routeGame">
+        <text class="text-button text-shadow">开始游戏</text>
+        <text class="text-button">开始游戏</text>
+      </stack>
+      <stack class="stack-button" @click="routeLoad">
+        <text class="text-button text-shadow">载入进度</text>
+        <text class="text-button">载入进度</text>
+      </stack>
+      <stack class="stack-button" @click="routeSetting">
+        <text class="text-button text-shadow">系统设定</text>
+        <text class="text-button">系统设定</text>
+      </stack>
+      <stack class="stack-button" @click="routeAbout">
+        <text class="text-button text-shadow">关于本篇</text>
+        <text class="text-button">关于本篇</text>
+      </stack>
+      <stack class="stack-button" @click="exitApp">
+        <text class="text-button text-shadow">退出游戏</text>
+        <text class="text-button">退出游戏</text>
+      </stack>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from "@system.router"
+import prompt from "@system.prompt"
+import {DEBUG} from "../../common/constants.js"
+
+export default {
+  data: {
+    isNavigating: false,
+    navTimer: null
+  },
+
+  onInit() {
+    this.isNavigating = false
+    this.clearNavTimer()
+  },
+
+  onShow() {
+    this.isNavigating = false
+    this.clearNavTimer()
+  },
+
+  clearNavTimer() {
+    if (this.navTimer) {
+      clearTimeout(this.navTimer)
+      this.navTimer = null
+    }
+  },
+
+  routeGame() {
+    if (this.isNavigating) return
+    this.isNavigating = true
+    if (DEBUG) console.info("[Index] 跳转到游戏页面")
+    router.push({uri: "/pages/game"})
+    this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
+  },
+
+  routeLoad() {
+    if (this.isNavigating) return
+    this.isNavigating = true
+    if (DEBUG) console.info("[Index] 跳转到加载数据页面")
+    router.push({uri: "/pages/data"})
+    this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
+  },
+
+  routeSetting() {
+    if (this.isNavigating) return
+    this.isNavigating = true
+    if (DEBUG) console.info("[Index] 跳转到设置页面")
+    router.push({uri: "/pages/settings"})
+    this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
+  },
+
+  routeAbout() {
+    if (this.isNavigating) return
+    this.isNavigating = true
+    if (DEBUG) console.info("[Index] 跳转到关于页面")
+    router.push({uri: "/pages/about"})
+    this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
+  },
+
+  exitApp() {
+    try {
+      this.$app.exit()
+    } catch (e) {
+      prompt.showToast({message: "无法退出"})
+    }
+  },
+
+  handleSwipe() {}
+}
+</script>
+
+<style>
+.bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.button-container {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+}
+
+.stack-button {
+  width: 160px;
+  height: 40px;
+  margin: 5px 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-button {
+  font-weight: bold;
+  font-size: 14px;
+  color: rgb(188, 72, 253);
+  text-align: center;
+}
+
+.text-shadow {
+  position: absolute;
+  color: #000000;
+  opacity: 0.6;
+  margin-top: 1px;
+  margin-left: 1px;
+}
+</style>
