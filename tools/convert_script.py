@@ -29,11 +29,11 @@ def to_arrays(raw_data):
 
     # 遍历每个场景
     for scene in scenes:
-        # 标签/跳转点 -> [1, "label_name"]
+        # 标签/跳转点 -> [0, "label_name"]
         if "label" in scene and scene["label"]:
             output.append([EventType.LABEL, scene["label"]])
 
-        # 提取章节标题 -> [0, "章节标题"]
+        # 提取章节标题 -> [1, "章节标题"]
         title = scene.get("title")
         if title and title != last_title:
             output.append([EventType.CHAPTER_TITLE, title])
@@ -92,7 +92,7 @@ def to_arrays(raw_data):
                             params.get("redraw", {}).get("imageFile", {}).get("file")
                         )
 
-                        # 处理与写入背景切换 -> [2, "bg_name"]
+                        # 处理与写入事件CG -> [5, "ev_img_name"]
                         if current_ev_img != last_ev:
                             output.append([EventType.EV, current_ev_img])
                             last_ev = current_ev_img
@@ -152,7 +152,7 @@ def to_arrays(raw_data):
             if select_list:
                 output.append([EventType.SELECT, select_list])
 
-        # 处理跳转 -> [5, "target_label"]
+        # 处理跳转 -> [6, "target_label"]
         nexts = scene.get("nexts", [])
         if nexts and isinstance(nexts, list):
             for line in nexts:
