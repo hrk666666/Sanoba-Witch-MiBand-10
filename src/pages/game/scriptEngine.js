@@ -115,6 +115,9 @@ export default {
       return
     }
 
+    // 新一句开始，清掉可能残留的自动播放计时
+    this.clearAutoPlayTimer()
+
     // 跨章节连续跳过
     if (this.isSkipping) {
       this.skipUntilSelect()
@@ -147,6 +150,9 @@ export default {
         // if (node.length > 3) {
         //   this.currentCharacters = node[3];
         // }
+
+        // 新对话出现时触发节流自动保存
+        this.maybeAutoSave()
 
         this.displayText = ""
         this.isTextComplete = false
@@ -244,6 +250,26 @@ export default {
   stopFastForward() {
     this.isFastForwarding = false
     this.clearFastForwardTimer()
+  },
+
+  // 自动播放：整句显示完后延迟 500ms 自动进入下一句
+  autoPlayNext() {
+    if (!this.isAutoPlay) return
+    if (this.showOptions || this.isSkipping || this.isFastForwarding) return
+
+    if (this.currentLineIndex < this.scriptData.length - 1) {
+      this.currentLineIndex++
+      this.showLine()
+    } else {
+      this.goToNextScenario()
+    }
+  },
+
+  clearAutoPlayTimer() {
+    if (this.autoPlayTimer) {
+      clearTimeout(this.autoPlayTimer)
+      this.autoPlayTimer = null
+    }
   },
 
   clearFastForwardTimer() {

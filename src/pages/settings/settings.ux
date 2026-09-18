@@ -2,39 +2,63 @@
   <div class="page" @swipe="handleSwipe">
     <image class="bg-image" src="/common/title_bg.jpg"></image>
 
-    <!-- 顶部按钮 -->
-    <text class="text-button" style="left: 15px" @click="saveSettings">保存</text>
-    <text class="text-button" style="right: 15px" @click="back">退出</text>
+    <!-- 顶部按钮：保存/退出 居中并排、间距缩小 -->
+    <div class="top-buttons">
+      <text class="text-button" @click="saveSettings">保存</text>
+      <text class="text-button" @click="back">退出</text>
+    </div>
 
-    <!-- 设置 -->
-    <text class="label-text" style="top: 50px">速度 ({{ settings.textSpeed }}ms)</text>
-    <slider
-      class="slider"
-      style="top: 75px"
-      min="20"
-      max="100"
-      step="5"
-      value="{{ settings.textSpeed }}"
-      @change="changeTextSpeed"
-    ></slider>
+    <!-- 设置项（可滚动） -->
+    <scroll scroll-y="true" class="scroll-container">
+      <text class="label-text">速度 ({{ settings.textSpeed }}ms)</text>
+      <slider
+        class="slider"
+        min="20"
+        max="100"
+        step="5"
+        value="{{ settings.textSpeed }}"
+        @change="changeTextSpeed"
+      ></slider>
 
-    <text class="label-text" style="top: 115px">大小 ({{ settings.textSize }}px)</text>
-    <slider
-      class="slider"
-      style="top: 140px"
-      min="10"
-      max="24"
-      step="1"
-      value="{{ settings.textSize }}"
-      @change="changeTextSize"
-    ></slider>
+      <text class="label-text">大小 ({{ settings.textSize }}px)</text>
+      <slider
+        class="slider"
+        min="10"
+        max="30"
+        step="1"
+        value="{{ settings.textSize }}"
+        @change="changeTextSize"
+      ></slider>
+
+      <!-- 功能开关 -->
+      <div class="switch-row" @click="toggleBoldText">
+        <text class="switch-label">文字加粗</text>
+        <text class="switch-value">{{ settings.boldText ? "开" : "关" }}</text>
+      </div>
+      <div class="switch-row" @click="toggleAutoSave">
+        <text class="switch-label">自动保存</text>
+        <text class="switch-value">{{ settings.autoSave ? "开" : "关" }}</text>
+      </div>
+      <div class="switch-row" @click="toggleKeepScreenOn">
+        <text class="switch-label">屏幕常亮</text>
+        <text class="switch-value">{{ settings.keepScreenOn ? "开" : "关" }}</text>
+      </div>
+      <div class="switch-row" @click="toggleDarkMode">
+        <text class="switch-label">纯黑模式</text>
+        <text class="switch-value">{{ settings.darkMode ? "开" : "关" }}</text>
+      </div>
+      <div class="switch-row" @click="toggleVibration">
+        <text class="switch-label">振动反馈</text>
+        <text class="switch-value">{{ settings.vibration ? "开" : "关" }}</text>
+      </div>
+    </scroll>
 
     <!-- 对话框与打字机预览 -->
     <div class="dialogue-box">
       <scroll scroll-y="true" class="scroll-view" id="dialogueScroll">
         <text
           class="typewriter-text"
-          style="font-size: {{ settings.textSize }}px; line-height: {{ settings.textSize * 1.2 }}px;"
+          style="font-size: {{ settings.textSize }}px; line-height: {{ settings.textSize * 1.2 }}px; font-weight: {{ settings.boldText ? 'bold' : 'normal' }};"
         >
           {{ displayText }}
         </text>
@@ -47,6 +71,7 @@
 import router from "@system.router"
 import storage from "@system.storage"
 import {DEBUG, SETTINGS_KEY} from "../../common/constants.js"
+import {vibrateShort} from "../../common/vibrate.js"
 
 export default {
   data: {
@@ -56,7 +81,12 @@ export default {
 
     settings: {
       textSpeed: 40,
-      textSize: 18
+      textSize: 22,
+      boldText: true,
+      autoSave: true,
+      keepScreenOn: false,
+      darkMode: false,
+      vibration: true
     }
   },
 
@@ -73,7 +103,8 @@ export default {
           try {
             if (DEBUG) console.log("[Settings] 原始设置数据: " + data)
 
-            that.settings = JSON.parse(data)
+            const parsed = JSON.parse(data)
+            Object.assign(that.settings, parsed)
           } catch (e) {
             if (DEBUG) console.error("[Settings] JSON解析出错: " + e.message)
           }
@@ -120,6 +151,7 @@ export default {
   },
 
   saveSettings() {
+    vibrateShort()
     const setting = JSON.stringify(this.settings)
     storage.set({
       key: SETTINGS_KEY,
@@ -150,6 +182,31 @@ export default {
     }
   },
 
+  toggleBoldText() {
+    this.settings.boldText = !this.settings.boldText
+    vibrateShort()
+  },
+
+  toggleAutoSave() {
+    this.settings.autoSave = !this.settings.autoSave
+    vibrateShort()
+  },
+
+  toggleKeepScreenOn() {
+    this.settings.keepScreenOn = !this.settings.keepScreenOn
+    vibrateShort()
+  },
+
+  toggleDarkMode() {
+    this.settings.darkMode = !this.settings.darkMode
+    vibrateShort()
+  },
+
+  toggleVibration() {
+    this.settings.vibration = !this.settings.vibration
+    vibrateShort()
+  },
+
   handleSwipe() {},
 
   onDestroy() {
@@ -160,6 +217,7 @@ export default {
   },
 
   back() {
+    vibrateShort()
     router.back()
   }
 }
@@ -182,11 +240,17 @@ export default {
   opacity: 0.35;
 }
 
+.top-buttons {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 54px;
+}
+
 .text-button {
-  position: absolute;
-  top: 15px;
   width: 64px;
   height: 30px;
+  margin: 0 6px;
   font-weight: bold;
   font-size: 14px;
   text-align: center;
@@ -196,22 +260,48 @@ export default {
   color: rgb(240, 200, 255);
 }
 
+.scroll-container {
+  flex: 1;
+  flex-direction: column;
+  padding: 0 15px;
+  padding-bottom: 150px; /* 给底部预览框留空间 */
+}
+
 .label-text {
-  position: absolute;
-  left: 15px;
   font-size: 15px;
   color: #ffffff;
   font-weight: bold;
+  margin-top: 12px;
 }
 
 .slider {
-  position: absolute;
-  left: 15px;
   height: 24px;
-  width: 85%;
+  width: 100%;
   selected-color: rgb(188, 72, 253);
   block-color: rgb(188, 72, 253);
   color: rgb(207, 137, 248);
+}
+
+.switch-row {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 46px;
+  margin-top: 4px;
+  padding: 0 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.switch-label {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.switch-value {
+  color: rgb(207, 137, 248);
+  font-size: 15px;
+  font-weight: bold;
 }
 
 .dialogue-box {
