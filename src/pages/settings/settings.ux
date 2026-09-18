@@ -23,7 +23,7 @@
       class="slider"
       style="top: 140px"
       min="10"
-      max="20"
+      max="24"
       step="1"
       value="{{ settings.textSize }}"
       @change="changeTextSize"
@@ -56,7 +56,7 @@ export default {
 
     settings: {
       textSpeed: 40,
-      textSize: 14
+      textSize: 18
     }
   },
 
@@ -185,10 +185,10 @@ export default {
 .text-button {
   position: absolute;
   top: 15px;
-  width: 55px;
-  height: 25px;
+  width: 64px;
+  height: 30px;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 14px;
   text-align: center;
   border-radius: 4px;
   background-color: rgba(188, 72, 253, 0.2);
@@ -199,7 +199,7 @@ export default {
 .label-text {
   position: absolute;
   left: 15px;
-  font-size: 13px;
+  font-size: 15px;
   color: #ffffff;
   font-weight: bold;
 }
@@ -207,8 +207,8 @@ export default {
 .slider {
   position: absolute;
   left: 15px;
-  height: 20px;
-  width: 75%;
+  height: 24px;
+  width: 85%;
   selected-color: rgb(188, 72, 253);
   block-color: rgb(188, 72, 253);
   color: rgb(207, 137, 248);
@@ -216,10 +216,10 @@ export default {
 
 .dialogue-box {
   position: absolute;
-  bottom: 15px;
+  bottom: 20px;
   left: 8px;
   right: 8px;
-  height: 85px;
+  height: 110px;
   background-color: rgba(0, 0, 0, 0.4);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);

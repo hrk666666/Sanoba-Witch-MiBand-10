@@ -20,7 +20,7 @@
           </div>
 
           <!-- 空存档的加号 -->
-          <text else style="color: #ffffff; font-size: 30px; line-height: 30px">+</text>
+          <text else style="color: #ffffff; font-size: 36px; line-height: 36px">+</text>
         </div>
       </div>
     </scroll>
@@ -152,14 +152,14 @@ export default {
 }
 
 .header {
-  height: 35px;
+  height: 44px;
   justify-content: center;
   align-items: center;
 }
 
 .title {
   color: #cf89f8;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: bold;
 }
 
@@ -175,8 +175,8 @@ export default {
 }
 
 .card {
-  width: 85%;
-  min-height: 55px;
+  width: 88%;
+  min-height: 68px;
   background-color: #cf89f8;
   border-radius: 12px;
   padding: 8px;
@@ -192,25 +192,25 @@ export default {
 
 .chap-name {
   color: #000000;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: bold;
   margin-bottom: 2px;
 }
 
 .prev-text {
   color: #1a1a1a;
-  font-size: 10px;
+  font-size: 12px;
   lines: 1;
   margin-bottom: 2px;
 }
 
 .date-text {
   color: #444444;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .footer-bar {
-  height: 45px;
+  height: 54px;
   background-color: #333333;
   margin: 8px;
   border-radius: 15px;
@@ -220,7 +220,7 @@ export default {
 
 .footer-text {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
 }
 </style>

@@ -82,14 +82,14 @@ export default {
 }
 
 .header {
-  height: 45px;
+  height: 52px;
   justify-content: center;
   align-items: center;
 }
 
 .title {
   color: #cf89f8;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: bold;
 }
 
@@ -111,9 +111,9 @@ export default {
 }
 
 .app-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
   margin-right: 10px;
 }
 
@@ -124,13 +124,13 @@ export default {
 
 .app-name {
   color: #1a1a1a;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: bold;
 }
 
 .app-version {
   color: #333333;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .details-container {
@@ -145,12 +145,12 @@ export default {
 
 .detail-label {
   color: #cf89f8;
-  font-size: 11px;
+  font-size: 13px;
   margin-bottom: 1px;
 }
 
 .detail-content {
   color: #ffffff;
-  font-size: 10px;
+  font-size: 14px;
 }
 </style>

@@ -121,8 +121,8 @@ export default {
 }
 
 .stack-button {
-  width: 160px;
-  height: 40px;
+  width: 172px;
+  height: 48px;
   margin: 5px 0;
   justify-content: center;
   align-items: center;
@@ -130,7 +130,7 @@ export default {
 
 .text-button {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 17px;
   color: rgb(188, 72, 253);
   text-align: center;
 }
