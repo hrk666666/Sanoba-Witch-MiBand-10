@@ -14,3 +14,5 @@
 # logs
 logs/
 *.logtests/_esm
+
+tests/_esm
