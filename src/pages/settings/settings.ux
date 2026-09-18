@@ -1,6 +1,6 @@
 <template>
   <div class="page" @swipe="handleSwipe">
-    <image class="bg-image" src="/common/title_bg.jpg"></image>
+    <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
 
     <!-- 顶部按钮：保存/退出 居中并排、间距缩小 -->
     <div class="top-buttons">

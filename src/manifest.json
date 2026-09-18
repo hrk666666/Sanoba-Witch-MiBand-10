@@ -2,7 +2,7 @@
   "package": "dev.futrw4v.sanoba_witch",
   "name": "魔女的夜宴",
   "versionName": "1.3.0",
-  "versionCode": 8,
+  "versionCode": 9,
   "minPlatformVersion": 1000,
   "icon": "/common/logo.png",
   "deviceTypeList": [
