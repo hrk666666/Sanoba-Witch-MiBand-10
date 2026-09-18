@@ -105,7 +105,7 @@ export default {
 
     const entry = {
       date: dateStr,
-      chapterName: this.incomingState.currentChapterName,
+      chapterName: this.incomingState.chapterName,
       preview: previewContent,
       gameState: this.incomingState
     }

@@ -20,6 +20,12 @@
     },
     {
       "name": "system.file"
+    },
+    {
+      "name": "system.audio"
+    },
+    {
+      "name": "system.vibrator"
     }
   ],
   "config": {
