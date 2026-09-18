@@ -1,6 +1,7 @@
 export const DEBUG = false
 export const SETTINGS_KEY = "settings"
 export const SAVE_KEY = "user_save_data"
+export const AUTO_SAVE_KEY = "auto_save_data"
 
 // 使用.json格式的文本似乎在实体机上读取不到剧本（就算模拟器读的到），故此处使用txt存储
 // 剧本列表

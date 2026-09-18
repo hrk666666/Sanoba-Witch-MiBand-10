@@ -6,6 +6,18 @@
 
     <!-- 滚动区域 -->
     <scroll scroll-y="true" class="scroll-container">
+      <!-- 自动存档槽（置顶，自动专用，只读不可覆盖） -->
+      <div class="slot-wrapper" @click="handleAutoSlot">
+        <div class="card auto-card {{ autoSaveEntry ? 'full' : 'empty' }}">
+          <div if="{{ autoSaveEntry }}" class="card-content">
+            <text class="chap-name">自动存档</text>
+            <text class="prev-text">{{ autoSaveEntry.preview }}</text>
+            <text class="date-text">{{ autoSaveEntry.date }}</text>
+          </div>
+          <text else style="color: #ffffff; font-size: 14px; line-height: 14px">暂无自动存档</text>
+        </div>
+      </div>
+
       <div
         for="{{ (index, item) in saves }}"
         class="slot-wrapper"
@@ -35,8 +47,8 @@
 import storage from "@system.storage"
 import router from "@system.router"
 import prompt from "@system.prompt"
-
-const SAVE_KEY = "user_save_data"
+import {SAVE_KEY, AUTO_SAVE_KEY} from "../../common/constants.js"
+import {vibrateShort} from "../../common/vibrate.js"
 
 export default {
   protected: {
@@ -45,7 +57,8 @@ export default {
 
   private: {
     saves: [null, null, null, null, null, null, null, null],
-    incomingState: null
+    incomingState: null,
+    autoSaveEntry: null
   },
 
   onInit() {
@@ -73,15 +86,42 @@ export default {
         }
       }
     })
+
+    // 读取自动存档槽
+    storage.get({
+      key: AUTO_SAVE_KEY,
+      success: (data) => {
+        if (data) {
+          try {
+            this.autoSaveEntry = JSON.parse(data)
+          } catch (e) {
+            this.autoSaveEntry = null
+          }
+        }
+      }
+    })
   },
 
   handleClick(index) {
+    vibrateShort()
     if (this.incomingState) {
       this.doSave(index)
     } else if (this.saves[index]) {
       this.doLoad(index)
     } else {
       prompt.showToast({message: "存档位为空"})
+    }
+  },
+
+  // 自动存档槽：只读（可读，不可手动覆盖/删除）
+  handleAutoSlot() {
+    vibrateShort()
+    if (this.incomingState) {
+      prompt.showToast({message: "自动存档不可手动覆盖"})
+    } else if (this.autoSaveEntry) {
+      this.doLoadAuto()
+    } else {
+      prompt.showToast({message: "暂无自动存档"})
     }
   },
 
@@ -120,7 +160,18 @@ export default {
   },
 
   doLoad(index) {
+    // 手动槽读取进入：禁用自动保存（不覆盖自动槽），仍手动保存
     this.$app.$def.globalGameState = this.saves[index].gameState
+    this.$app.$def.globalGameState._fromLoad = true
+
+    router.replace({
+      uri: "pages/game"
+    })
+  },
+
+  // 自动存档读取：等同继续游戏，自动保存保持启用
+  doLoadAuto() {
+    this.$app.$def.globalGameState = this.autoSaveEntry.gameState
 
     router.replace({
       uri: "pages/game"
@@ -128,6 +179,7 @@ export default {
   },
 
   handleDelete(index) {
+    vibrateShort()
     if (!this.saves[index]) return
 
     this.saves.splice(index, 1, null)
@@ -138,6 +190,7 @@ export default {
   },
 
   goBack() {
+    vibrateShort()
     router.back()
   }
 }
@@ -182,6 +235,12 @@ export default {
   padding: 8px;
   justify-content: center;
   align-items: center;
+}
+
+/* 自动存档槽：紫色高亮边框，标识自动专用 */
+.auto-card {
+  background-color: rgba(207, 137, 248, 0.35);
+  border: 1px solid #cf89f8;
 }
 
 .card-content {

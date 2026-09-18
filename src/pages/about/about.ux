@@ -11,7 +11,7 @@
       <div class="app-card">
         <image class="app-icon" src="/common/logo.png"></image>
         <div class="app-info">
-          <text class="app-name">魔女的夜宴 Band 9/10</text>
+          <text class="app-name">魔女的夜宴 Band 9/10/11</text>
           <text class="app-version">v{{ appVersion }}</text>
         </div>
       </div>
@@ -20,12 +20,12 @@
       <div class="details-container">
         <div class="detail-item">
           <text class="detail-label">作者</text>
-          <text class="detail-content">futrw4v（原版）/ hrk666666（9/10 适配）</text>
+          <text class="detail-content">futrw4v（原版）/ hrk_（9/10/11 适配）</text>
         </div>
 
         <div class="detail-item">
           <text class="detail-label">上游仓库</text>
-          <text class="detail-content">github.com/futrw4v/Sanoba-Witch-MiBand-9Pro</text>
+          <text class="detail-content">futrw4v/Sanoba-Witch-MiBand-9Pro</text>
         </div>
 
         <div class="detail-item">
@@ -37,6 +37,12 @@
           <text class="detail-label">说明</text>
           <text class="detail-content">请不要用于商业用途</text>
         </div>
+
+        <!-- 新增：返回载入进度页 -->
+        <div class="detail-item" @click="routeLoad">
+          <text class="detail-label">返回载入进度页</text>
+          <text class="detail-content">点击前往读取存档</text>
+        </div>
       </div>
     </div>
   </div>
@@ -46,6 +52,7 @@
 import router from "@system.router"
 import manifest from "../../manifest.json"
 import {DEBUG} from "../../common/constants.js"
+import {vibrateShort} from "../../common/vibrate.js"
 
 export default {
   private: {
@@ -57,11 +64,17 @@ export default {
   },
 
   swipeBack() {
+    vibrateShort()
     router.back()
   },
 
   longPressBack() {
     if (DEBUG) router.back()
+  },
+
+  routeLoad() {
+    vibrateShort()
+    router.push({uri: "pages/data"})
   }
 }
 </script>
@@ -126,6 +139,7 @@ export default {
   color: #1a1a1a;
   font-size: 15px;
   font-weight: bold;
+  lines: 2;
 }
 
 .app-version {
@@ -145,12 +159,12 @@ export default {
 
 .detail-label {
   color: #cf89f8;
-  font-size: 13px;
+  font-size: 17px; /* 原 13px 的约 1.3 倍 */
   margin-bottom: 1px;
 }
 
 .detail-content {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 18px; /* 原 14px 的约 1.3 倍 */
 }
 </style>
