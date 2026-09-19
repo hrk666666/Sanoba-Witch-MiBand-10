@@ -1,7 +1,7 @@
 <template>
   <div class="page" @swipe="handleSwipe">
     <!-- 背景（纯黑模式不渲染图片） -->
-    <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
+    <image class="bg-image" if="false" src=""></image>
 
     <!-- 顶部标题区 -->
     <div class="header">
@@ -49,7 +49,7 @@ export default {
     isNavigating: false,
     navTimer: null,
     settings: {
-      darkMode: false,
+      darkMode: true,
       vibration: true
     }
   },

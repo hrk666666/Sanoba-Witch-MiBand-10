@@ -10,7 +10,7 @@
     ontouchmove="pageTouchMove"
     ontouchend="pageTouchEnd"
   >
-    <image class="bg-image" if="{{ !settings.darkMode }}" src="{{ '/common/bg/' + currentBg + '.jpg' }}"></image>
+    <image class="bg-image" if="false" src="{{ '/common/bg/' + currentBg + '.jpg' }}"></image>
 
     <!-- 立绘三槽位 -->
     <image
@@ -106,7 +106,7 @@
     <div class="menu-overlay" if="{{ showSwipeMenu }}">
       <image
         class="bg-image"
-        if="{{ !settings.darkMode }}"
+        if="false"
         style="opacity: 0.4"
         src="{{ '/common/bg/' + currentBg + '.jpg' }}"
       ></image>
@@ -218,7 +218,7 @@ export default {
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
-      darkMode: false,
+      darkMode: true,
       vibration: true
     }
   },
