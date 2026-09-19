@@ -984,10 +984,6 @@ function normalizeSave(s) {
   align-items: center;
 }
 
-.option-btn:active {
-  background-color: #0a55c4;
-}
-
 .option-text {
   color: #ffffff;
   font-size: 20px;
@@ -1068,10 +1064,6 @@ function normalizeSave(s) {
   border-radius: 24px;
   justify-content: center;
   align-items: center;
-}
-
-.menu-btn:active {
-  background-color: #333333;
 }
 
 .menu-btn-active {

@@ -125,10 +125,6 @@ export default {
   flex-direction: column;
 }
 
-.card:active {
-  background-color: #333333;
-}
-
 .app-row {
   flex-direction: row;
   align-items: center;

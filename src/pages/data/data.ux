@@ -230,10 +230,6 @@ export default {
   justify-content: center;
 }
 
-.card:active {
-  background-color: #333333;
-}
-
 .auto-card {
   background-color: rgba(13, 110, 255, 0.12);
   border-width: 1px;
@@ -303,10 +299,6 @@ export default {
   border-radius: 24px;
   justify-content: center;
   align-items: center;
-}
-
-.footer:active {
-  background-color: #333333;
 }
 
 .footer-text {
