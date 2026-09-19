@@ -29,10 +29,12 @@ const MODULES = [
   "platformAdapter.js"
 ]
 for (const f of MODULES) {
-  fs.copyFileSync(
-    path.join(ENGINE_SRC, f),
-    path.join(ESM_DIR, f.replace(/\.js$/, ".mjs"))
-  )
+  const srcPath = path.join(ENGINE_SRC, f)
+  const dstPath = path.join(ESM_DIR, f.replace(/\.js$/, ".mjs"))
+  let code = fs.readFileSync(srcPath, "utf-8")
+  // 修正 ESM import 路径：./xxx.js -> ./xxx.mjs（复制后扩展名变了）
+  code = code.replace(/from\s+["'](\.\/[^"']+)\.js["']/g, 'from "$1.mjs"')
+  fs.writeFileSync(dstPath, code, "utf-8")
 }
 
 const { Variables } = await import("./_esm/variables.mjs")

@@ -14,6 +14,8 @@
  * 换平台 = 新写一个 adapter，引擎零改动。
  */
 
+import { ResourceManager } from "./resourceManager.js"
+
 /** 从内容包配置解析场景：id -> {id, path, listName} */
 function findScenario(config, scnId) {
   if (!config || !config.scenarios) return null
@@ -33,11 +35,14 @@ export function createAiotAdapter(config, resourceManager) {
   const vibrator = require("@system.vibrator")
   const sysAudio = require("@system.audio")
 
+  // resourceManager 可能由外部注入，也可能在 readConfig 成功后自行创建
+  let rm = resourceManager || null
+
   const audio = {
     _endedCb: null,
     play(name, { loop = true } = {}) {
-      if (!name || !resourceManager) return
-      sysAudio.src = resourceManager.uri("audio", name)
+      if (!name || !rm) return
+      sysAudio.src = rm.uri("audio", name)
       sysAudio.loop = loop
       sysAudio.autoplay = true
       sysAudio.play()
@@ -63,6 +68,8 @@ export function createAiotAdapter(config, resourceManager) {
             try {
               const cfg = JSON.parse(data.text)
               this.config = cfg
+              // readConfig 成功后自行初始化 ResourceManager（外部未注入时）
+              if (!rm) rm = new ResourceManager(cfg.resources)
               resolve(cfg)
             } catch (e) {
               reject(new Error("game.txt 解析失败"))

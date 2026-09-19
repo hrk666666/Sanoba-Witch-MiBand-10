@@ -228,7 +228,6 @@ export default {
 
     // 状态与设置（窄屏适配：默认字号 22 = 原 18 的 1.25 倍）
     isLoading: true,
-    isSkipping: false,
     settings: {
       textSpeed: 40,
       textSize: 22,

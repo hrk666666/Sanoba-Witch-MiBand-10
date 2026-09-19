@@ -7,6 +7,20 @@
 
 ---
 
+## [1.3.2] - 2026-09-19
+
+### 修复
+
+- **BGM/SE 不播放**：`createAiotAdapter` 的 `resourceManager` 闭包变量在 game.ux 调用时未注入（始终为 `undefined`），导致 `audio.play()` 首行 `!resourceManager` 直接 return，剧本节点 8（音乐）发出的播放请求全部静默丢弃。改为 `readConfig` 成功后自动初始化 `ResourceManager`，音频 URI 解析恢复正常。
+- **game.ux 重复属性**：`private` 块中 `isSkipping` 声明两次（引擎状态区与 UI 状态区各一份），后者覆盖前者，删除冗余声明。
+
+### 其他
+
+- **测试脚本**：`run-tests.mjs` 的引擎文件复制逻辑增加 import 路径修正（`./xxx.js` → `./xxx.mjs`），与 `regression-real.mjs` 对齐，避免新增跨模块 import 后测试报 `MODULE_NOT_FOUND`。
+- 版本号 `versionCode 9 → 10`，`versionName 1.3.0 → 1.3.2`。
+
+---
+
 ## [1.3.0] - 2026-09-18
 
 ### 新增

@@ -55,6 +55,19 @@
 - `settings.ux`、`about.ux` 的背景图与应用图标补 `!settings.darkMode` 条件：纯黑模式下一并隐藏。
 - versionCode 8→9。
 
+## v1.3.2（2026-09-19）— 音频不播放修复
+
+- **根因**：`createAiotAdapter(config, resourceManager)` 签名要求外部注入 `resourceManager` 以解析音频 URI，但 `game.ux` 调用 `createAiotAdapter()` 时未传参，闭包变量始终 `undefined`。`audio.play()` 首行 `if (!name || !resourceManager) return` 直接拦截，剧本节点 8（音乐）全部静默丢弃。
+- **修复**：`readConfig` 成功后自动 `new ResourceManager(cfg.resources)`，外部未注入时自行初始化；外部注入优先。
+- **game.ux**：`private` 块中 `isSkipping` 重复声明，删除冗余项。
+- **测试脚本**：`run-tests.mjs` 复制引擎到 `_esm/` 时增加 import 路径 `.js→.mjs` 替换，与 `regression-real.mjs` 对齐。
+- versionCode 9→10。
+
+### 新增踩坑记录
+
+- **引擎跨模块 import**：在 `platformAdapter.js` 等引擎文件顶部 `import` 其他引擎模块时，测试脚本的文件复制会把 `.js` 改名为 `.mjs`，必须同步修正 import 路径，否则 `run-tests.mjs` 报 `MODULE_NOT_FOUND`。
+- **adapter 闭包依赖注入**：`createAiotAdapter` 内部闭包引用的平台依赖（如 `resourceManager`）必须在 adapter 构造完成后可被 `readConfig` 延迟初始化，不能假设外部一定传参。
+
 ## no-image 分支（2026-09-18）— 无图纯黑版
 
 - 删除 `common/bg/`、`common/sd/`、`common/ev/`、`common/logo.png`、`common/title_bg.jpg`，剧本 `common/scn/` 完整保留。
