@@ -1,6 +1,6 @@
 <template>
   <div class="page" @swipe="handleSwipe">
-    <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
+    <!-- 无图版：不渲染背景图，底色纯黑 -->
 
     <!-- 顶部按钮：保存/退出 居中并排、间距缩小 -->
     <div class="top-buttons">
@@ -43,10 +43,6 @@
         <text class="switch-label">屏幕常亮</text>
         <text class="switch-value">{{ settings.keepScreenOn ? "开" : "关" }}</text>
       </div>
-      <div class="switch-row" @click="toggleDarkMode">
-        <text class="switch-label">纯黑模式</text>
-        <text class="switch-value">{{ settings.darkMode ? "开" : "关" }}</text>
-      </div>
       <div class="switch-row" @click="toggleVibration">
         <text class="switch-label">振动反馈</text>
         <text class="switch-value">{{ settings.vibration ? "开" : "关" }}</text>
@@ -85,7 +81,7 @@ export default {
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
-      darkMode: false,
+      darkMode: true, /* 无图版恒纯黑 */
       vibration: true
     }
   },
@@ -230,14 +226,6 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #000000;
-}
-
-.bg-image {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.35;
 }
 
 .top-buttons {

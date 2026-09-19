@@ -1,7 +1,6 @@
 <template>
   <div class="page" @swipe="handleSwipe">
-    <!-- 背景（纯黑模式不渲染图片） -->
-    <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
+    <!-- 无图版：不渲染背景图，底色纯黑 -->
 
     <!-- 按钮区域 - flex 自适应布局（手环 9/10/11 通吃） -->
     <div class="button-container">
@@ -176,15 +175,6 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #000000;
-}
-
-.bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .button-container {

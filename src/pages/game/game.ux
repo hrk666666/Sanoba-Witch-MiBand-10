@@ -10,43 +10,7 @@
     ontouchmove="pageTouchMove"
     ontouchend="pageTouchEnd"
   >
-    <image class="bg-image" if="{{ !settings.darkMode }}" src="{{ '/common/bg/' + currentBg + '.jpg' }}"></image>
-
-    <!-- 立绘三槽位（内容包 ch/ 提供 PNG 时显示；缺失时该槽自动空出） -->
-    <image
-      if="{{ characters.left && !settings.darkMode }}"
-      class="sprite sprite-left {{ characters.left.action }}"
-      src="{{ '/common/ch/' + characters.left.key + '.png' }}"
-    ></image>
-    <image
-      if="{{ characters.center && !settings.darkMode }}"
-      class="sprite sprite-center {{ characters.center.action }}"
-      src="{{ '/common/ch/' + characters.center.key + '.png' }}"
-    ></image>
-    <image
-      if="{{ characters.right && !settings.darkMode }}"
-      class="sprite sprite-right {{ characters.right.action }}"
-      src="{{ '/common/ch/' + characters.right.key + '.png' }}"
-    ></image>
-
-    <!-- EV 事件图（feature/ev 分支未完成，保留渲染层） -->
-    <image
-      class="ev-image"
-      if="{{ currentEV && !settings.darkMode }}"
-      src="{{ '/common/ev/' + currentEV + '.jpg' }}"
-    ></image>
-
-    <!-- SD 事件图（原图尺寸 240x144，超屏可左右拖动；层级与背景同级） -->
-    <image
-      class="sd-image"
-      if="{{ currentSD && !settings.darkMode }}"
-      src="{{ '/common/sd/' + currentSD + '.jpg' }}"
-      style="left: {{ sdLeft }}px; top: {{ sdTop }}px"
-      ontouchstart="sdTouchStart"
-      ontouchmove="sdTouchMove"
-      ontouchend="sdTouchEnd"
-      @click="stopClick"
-    ></image>
+    <!-- 无图版：不渲染背景图、立绘、EV、SD，底色纯黑 -->
 
     <!-- 特效层（whiteflash/blackout/fadein/fadeout，引擎 fxManager 驱动） -->
     <div class="fx-overlay {{ fxClass }}" if="{{ fxActive }}"></div>
@@ -105,13 +69,6 @@
 
     <!-- 侧滑/长按菜单部分 -->
     <div class="menu-overlay" if="{{ showSwipeMenu }}">
-      <image
-        class="bg-image"
-        if="{{ !settings.darkMode }}"
-        style="opacity: 0.4"
-        src="{{ '/common/bg/' + currentBg + '.jpg' }}"
-      ></image>
-
       <div class="menu-container" @click="stopClick">
         <text class="menu-time">{{ currentTime }}</text>
         <text class="menu-title">菜单</text>

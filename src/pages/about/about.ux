@@ -1,15 +1,14 @@
 <template>
   <div class="page" @swipe="swipeBack" @longpress="longPressBack">
-    <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
+    <!-- 无图版：不渲染背景图，底色纯黑 -->
 
     <div class="header">
       <text class="title">关于</text>
     </div>
 
     <div class="main-container">
-      <!-- 上方卡片 -->
+      <!-- 上方卡片（无图版不显示图标） -->
       <div class="app-card">
-        <image class="app-icon" if="{{ !settings.darkMode }}" src="/common/logo.png"></image>
         <div class="app-info">
           <text class="app-name">魔女的夜宴 Band 9/10/11</text>
           <text class="app-version">v{{ appVersion }}</text>
@@ -87,13 +86,6 @@ export default {
   height: 100%;
 }
 
-.bg-image {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 0.15;
-}
-
 .header {
   height: 52px;
   justify-content: center;
@@ -121,13 +113,6 @@ export default {
   flex-direction: row;
   align-items: center;
   margin-bottom: 15px;
-}
-
-.app-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  margin-right: 10px;
 }
 
 .app-info {
