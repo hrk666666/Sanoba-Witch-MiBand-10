@@ -1,16 +1,19 @@
 <template>
   <div class="page" @swipe="handleSwipe">
-    <!-- 无图版：不渲染背景图，底色纯黑 -->
+    <image class="bg-image" if="false" src=""></image>
 
-    <!-- 顶部按钮：保存/退出 居中并排、间距缩小 -->
-    <div class="top-buttons">
-      <text class="text-button" @click="saveSettings">保存</text>
-      <text class="text-button" @click="back">退出</text>
+    <!-- 顶部标题 -->
+    <div class="header">
+      <text class="header-title">系统设定</text>
     </div>
 
-    <!-- 设置项（可滚动） -->
-    <scroll scroll-y="true" class="scroll-container">
-      <text class="label-text">速度 ({{ settings.textSpeed }}ms)</text>
+    <!-- 设置列表 -->
+    <scroll scroll-y="true" class="list">
+      <!-- 文字速度 -->
+      <div class="card">
+        <text class="card-label">文字速度</text>
+        <text class="card-value">{{ settings.textSpeed }}ms</text>
+      </div>
       <slider
         class="slider"
         min="20"
@@ -20,7 +23,11 @@
         @change="changeTextSpeed"
       ></slider>
 
-      <text class="label-text">大小 ({{ settings.textSize }}px)</text>
+      <!-- 文字大小 -->
+      <div class="card">
+        <text class="card-label">文字大小</text>
+        <text class="card-value">{{ settings.textSize }}px</text>
+      </div>
       <slider
         class="slider"
         min="10"
@@ -31,30 +38,42 @@
       ></slider>
 
       <!-- 功能开关 -->
-      <div class="switch-row" @click="toggleBoldText">
-        <text class="switch-label">文字加粗</text>
-        <text class="switch-value">{{ settings.boldText ? "开" : "关" }}</text>
+      <div class="card switch-row" @click="toggleBoldText">
+        <text class="card-label">文字加粗</text>
+        <image class="switch-img" src="/common/images/{{ settings.boldText ? 'Switch_ON' : 'Switch_OFF' }}.png"></image>
       </div>
-      <div class="switch-row" @click="toggleAutoSave">
-        <text class="switch-label">自动保存</text>
-        <text class="switch-value">{{ settings.autoSave ? "开" : "关" }}</text>
+      <div class="card switch-row" @click="toggleAutoSave">
+        <text class="card-label">自动保存</text>
+        <image class="switch-img" src="/common/images/{{ settings.autoSave ? 'Switch_ON' : 'Switch_OFF' }}.png"></image>
       </div>
-      <div class="switch-row" @click="toggleKeepScreenOn">
-        <text class="switch-label">屏幕常亮</text>
-        <text class="switch-value">{{ settings.keepScreenOn ? "开" : "关" }}</text>
+      <div class="card switch-row" @click="toggleKeepScreenOn">
+        <text class="card-label">屏幕常亮</text>
+        <image class="switch-img" src="/common/images/{{ settings.keepScreenOn ? 'Switch_ON' : 'Switch_OFF' }}.png"></image>
       </div>
-      <div class="switch-row" @click="toggleVibration">
-        <text class="switch-label">振动反馈</text>
-        <text class="switch-value">{{ settings.vibration ? "开" : "关" }}</text>
+        <image class="switch-img" src="/common/images/{{ settings.darkMode ? 'Switch_ON' : 'Switch_OFF' }}.png"></image>
+      </div>
+      <div class="card switch-row" @click="toggleVibration">
+        <text class="card-label">振动反馈</text>
+        <image class="switch-img" src="/common/images/{{ settings.vibration ? 'Switch_ON' : 'Switch_OFF' }}.png"></image>
       </div>
     </scroll>
 
-    <!-- 对话框与打字机预览 -->
-    <div class="dialogue-box">
-      <scroll scroll-y="true" class="scroll-view" id="dialogueScroll">
+    <!-- 底部操作栏 -->
+    <div class="footer">
+      <div class="footer-btn" @click="saveSettings">
+        <text class="footer-btn-text">保存</text>
+      </div>
+      <div class="footer-btn" @click="back">
+        <text class="footer-btn-text">返回</text>
+      </div>
+    </div>
+
+    <!-- 打字机预览 -->
+    <div class="preview-box">
+      <scroll scroll-y="true" class="preview-scroll" id="dialogueScroll">
         <text
-          class="typewriter-text"
-          style="font-size: {{ settings.textSize }}px; line-height: {{ settings.textSize * 1.2 }}px; font-weight: {{ settings.boldText ? 'bold' : 'normal' }};"
+          class="preview-text"
+          style="font-size: {{ settings.textSize }}px; line-height: {{ settings.textSize * 1.3 }}px; font-weight: {{ settings.boldText ? 'bold' : 'normal' }};"
         >
           {{ displayText }}
         </text>
@@ -81,7 +100,7 @@ export default {
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
-      darkMode: true, /* 无图版恒纯黑 */
+      darkMode: true,
       vibration: true
     }
   },
@@ -89,25 +108,15 @@ export default {
   onInit() {
     this.timer = null
 
-    const that = this
-
     storage.get({
       key: SETTINGS_KEY,
-
       success: (data) => {
         if (data) {
           try {
-            if (DEBUG) console.log("[Settings] 原始设置数据: " + data)
-
             const parsed = JSON.parse(data)
-            Object.assign(that.settings, parsed)
-          } catch (e) {
-            if (DEBUG) console.error("[Settings] JSON解析出错: " + e.message)
-          }
-        } else {
-          if (DEBUG) console.log("[Settings] 未读取到缓存数据，使用默认设置")
+            Object.assign(this.settings, parsed)
+          } catch (e) {}
         }
-
         this.showTypeWriterEffect()
       }
     })
@@ -117,10 +126,7 @@ export default {
     if (this.timer) clearTimeout(this.timer)
 
     if (this.currentCharIndex === 0) {
-      this.$element("dialogueScroll").scrollTo({
-        top: 0,
-        behavior: "instant"
-      })
+      this.$element("dialogueScroll").scrollTo({ top: 0, behavior: "instant" })
     }
 
     if (this.currentCharIndex < this.text.length) {
@@ -132,10 +138,7 @@ export default {
       }, this.settings.textSpeed)
 
       if (this.currentCharIndex % 5 === 0 && this.displayText.length > 20) {
-        this.$element("dialogueScroll").scrollTo({
-          top: 9999,
-          behavior: "instant"
-        })
+        this.$element("dialogueScroll").scrollTo({ top: 9999, behavior: "instant" })
       }
     } else {
       this.timer = setTimeout(() => {
@@ -148,34 +151,22 @@ export default {
 
   saveSettings() {
     vibrateShort()
-    const setting = JSON.stringify(this.settings)
     storage.set({
       key: SETTINGS_KEY,
       value: JSON.stringify(this.settings),
-
-      success: () => {
-        if (DEBUG) console.info("[Settings] 设置保存成功: " + setting)
-        this.back()
-      },
-
-      fail: () => {
-        if (DEBUG) console.error("[Settings] 设置保存失败")
-      }
+      success: () => { this.back() },
+      fail: () => {}
     })
   },
 
   changeTextSpeed(e) {
     const value = e.progress !== undefined ? e.progress : e.value
-    if (value !== undefined) {
-      this.settings.textSpeed = value
-    }
+    if (value !== undefined) this.settings.textSpeed = value
   },
 
   changeTextSize(e) {
     const value = e.progress !== undefined ? e.progress : e.value
-    if (value !== undefined) {
-      this.settings.textSize = value
-    }
+    if (value !== undefined) this.settings.textSize = value
   },
 
   toggleBoldText() {
@@ -193,10 +184,8 @@ export default {
     vibrateShort()
   },
 
-  toggleDarkMode() {
     this.settings.darkMode = !this.settings.darkMode
     vibrateShort()
-  },
 
   toggleVibration() {
     this.settings.vibration = !this.settings.vibration
@@ -228,94 +217,131 @@ export default {
   background-color: #000000;
 }
 
-.top-buttons {
-  flex-direction: row;
+.bg-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35;
+}
+
+.header {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  height: 44px;
   justify-content: center;
   align-items: center;
-  height: 54px;
 }
 
-.text-button {
-  width: 64px;
-  height: 30px;
-  margin: 0 6px;
+.header-title {
+  font-size: 26px;
   font-weight: bold;
-  font-size: 14px;
-  text-align: center;
-  border-radius: 4px;
-  background-color: rgba(188, 72, 253, 0.2);
-  border: 1px solid rgb(188, 72, 253);
-  color: rgb(240, 200, 255);
-}
-
-.scroll-container {
-  flex: 1;
-  flex-direction: column;
-  padding: 0 15px;
-  padding-bottom: 150px; /* 给底部预览框留空间 */
-}
-
-.label-text {
-  font-size: 15px;
   color: #ffffff;
+}
+
+.list {
+  position: absolute;
+  top: 76px;
+  left: 12px;
+  right: 12px;
+  bottom: 160px;
+  flex-direction: column;
+}
+
+.card {
+  width: 100%;
+  height: 56px;
+  margin-bottom: 8px;
+  padding: 0 18px;
+  background-color: #262626;
+  border-radius: 26px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card:active {
+  background-color: #333333;
+}
+
+.card-label {
+  font-size: 21px;
   font-weight: bold;
-  margin-top: 12px;
+  color: #ffffff;
+}
+
+.card-value {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .slider {
-  height: 24px;
+  height: 32px;
   width: 100%;
-  selected-color: rgb(188, 72, 253);
-  block-color: rgb(188, 72, 253);
-  color: rgb(207, 137, 248);
+  margin-bottom: 12px;
+  selected-color: #0d6eff;
+  block-color: #0d6eff;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .switch-row {
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  height: 46px;
-  margin-top: 4px;
-  padding: 0 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 8px;
 }
 
-.switch-label {
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: bold;
+.switch-img {
+  width: 48px;
+  height: 28px;
 }
 
-.switch-value {
-  color: rgb(207, 137, 248);
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.dialogue-box {
+.footer {
   position: absolute;
-  bottom: 20px;
-  left: 8px;
-  right: 8px;
-  height: 110px;
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 8px;
-  display: flex;
+  bottom: 130px;
+  left: 12px;
+  right: 12px;
+  flex-direction: row;
+  justify-content: center;
 }
 
-.scroll-view {
+.footer-btn {
+  flex: 1;
+  height: 48px;
+  margin: 0 6px;
+  background-color: #0d6eff;
+  border-radius: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-btn:active {
+  background-color: #0a55c4;
+}
+
+.footer-btn-text {
+  font-size: 21px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.preview-box {
+  position: absolute;
+  bottom: 16px;
+  left: 12px;
+  right: 12px;
+  height: 96px;
+  background-color: #262626;
+  border-radius: 20px;
+  padding: 12px;
+}
+
+.preview-scroll {
   width: 100%;
   height: 100%;
-  flex-wrap: wrap;
 }
 
-.typewriter-text {
+.preview-text {
   width: 100%;
   color: #ffffff;
   text-align: left;
-  padding: 0;
-  margin: 0;
 }
 </style>

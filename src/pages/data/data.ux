@@ -1,43 +1,51 @@
 <template>
   <div class="page">
+    <!-- 顶部标题 -->
     <div class="header">
-      <text class="title">{{ incomingState ? "保存" : "读取" }}</text>
+      <text class="header-title">{{ incomingState ? "保存进度" : "读取进度" }}</text>
     </div>
 
-    <!-- 滚动区域 -->
-    <scroll scroll-y="true" class="scroll-container">
-      <!-- 自动存档槽（置顶，自动专用，只读不可覆盖） -->
-      <div class="slot-wrapper" @click="handleAutoSlot">
-        <div class="card auto-card {{ autoSaveEntry ? 'full' : 'empty' }}">
-          <div if="{{ autoSaveEntry }}" class="card-content">
-            <text class="chap-name">自动存档</text>
-            <text class="prev-text">{{ autoSaveEntry.preview }}</text>
-            <text class="date-text">{{ autoSaveEntry.date }}</text>
+    <!-- 存档列表 -->
+    <scroll scroll-y="true" class="list">
+      <!-- 自动存档槽 -->
+      <div class="card auto-card" @click="handleAutoSlot">
+        <div if="{{ autoSaveEntry }}" class="card-content">
+          <div class="card-header-row">
+            <text class="card-title">自动存档</text>
+            <image class="status-icon" src="/common/images/succ.png"></image>
           </div>
-          <text else style="color: #ffffff; font-size: 14px; line-height: 14px">暂无自动存档</text>
+          <text class="card-desc">{{ autoSaveEntry.preview }}</text>
+          <text class="card-date">{{ autoSaveEntry.date }}</text>
+        </div>
+        <div else class="card-empty">
+          <image class="empty-icon" src="/common/images/empty.png"></image>
+          <text class="empty-text">暂无自动存档</text>
         </div>
       </div>
 
+      <!-- 手动存档槽 -->
       <div
         for="{{ (index, item) in saves }}"
-        class="slot-wrapper"
+        class="card"
         @click="handleClick(index)"
         @longpress="handleDelete(index)"
       >
-        <div class="card {{ item ? 'full' : 'empty' }}">
-          <div if="{{ item }}" class="card-content">
-            <text class="chap-name">{{ item.chapterName }}</text>
-            <text class="prev-text">{{ item.preview }}</text>
-            <text class="date-text">{{ item.date }}</text>
+        <div if="{{ item }}" class="card-content">
+          <div class="card-header-row">
+            <text class="card-title">{{ item.chapterName }}</text>
           </div>
-
-          <!-- 空存档的加号 -->
-          <text else style="color: #ffffff; font-size: 36px; line-height: 36px">+</text>
+          <text class="card-desc">{{ item.preview }}</text>
+          <text class="card-date">{{ item.date }}</text>
+        </div>
+        <div else class="card-empty">
+          <image class="empty-icon" src="/common/images/plus.png"></image>
+          <text class="empty-text">空存档位</text>
         </div>
       </div>
     </scroll>
 
-    <div class="footer-bar" @click="goBack">
+    <!-- 底部返回 -->
+    <div class="footer" @click="goBack">
       <text class="footer-text">返回</text>
     </div>
   </div>
@@ -70,7 +78,6 @@ export default {
         this.incomingState = null
       }
     }
-
     this.initData()
   },
 
@@ -87,7 +94,6 @@ export default {
       }
     })
 
-    // 读取自动存档槽
     storage.get({
       key: AUTO_SAVE_KEY,
       success: (data) => {
@@ -113,7 +119,6 @@ export default {
     }
   },
 
-  // 自动存档槽：只读（可读，不可手动覆盖/删除）
   handleAutoSlot() {
     vibrateShort()
     if (this.incomingState) {
@@ -130,13 +135,11 @@ export default {
 
     const rawText = this.incomingState.fullText
     let previewContent = "..."
-
-    if (this.incomingState.fullText) {
+    if (rawText) {
       previewContent = rawText.length > 10 ? rawText.substring(0, 10) + "..." : rawText
     }
 
     const now = new Date()
-
     const month = now.getMonth() + 1
     const day = now.getDate()
     const hour = now.getHours().toString().padStart(2, "0")
@@ -151,7 +154,6 @@ export default {
     }
 
     this.saves.splice(index, 1, entry)
-
     storage.set({
       key: SAVE_KEY,
       value: JSON.stringify(this.saves),
@@ -160,32 +162,21 @@ export default {
   },
 
   doLoad(index) {
-    // 手动槽读取进入：禁用自动保存（不覆盖自动槽），仍手动保存
     this.$app.$def.globalGameState = this.saves[index].gameState
     this.$app.$def.globalGameState._fromLoad = true
-
-    router.replace({
-      uri: "pages/game"
-    })
+    router.replace({ uri: "pages/game" })
   },
 
-  // 自动存档读取：等同继续游戏，自动保存保持启用
   doLoadAuto() {
     this.$app.$def.globalGameState = this.autoSaveEntry.gameState
-
-    router.replace({
-      uri: "pages/game"
-    })
+    router.replace({ uri: "pages/game" })
   },
 
   handleDelete(index) {
     vibrateShort()
     if (!this.saves[index]) return
-
     this.saves.splice(index, 1, null)
-
     storage.set({key: SAVE_KEY, value: JSON.stringify(this.saves)})
-
     prompt.showToast({message: "删除成功"})
   },
 
@@ -199,87 +190,128 @@ export default {
 <style>
 .page {
   flex-direction: column;
-  background-color: #1d1d1d;
+  background-color: #000000;
   width: 100%;
   height: 100%;
 }
 
 .header {
+  position: absolute;
+  top: 20px;
+  width: 100%;
   height: 44px;
   justify-content: center;
   align-items: center;
 }
 
-.title {
-  color: #cf89f8;
-  font-size: 17px;
+.header-title {
+  font-size: 26px;
   font-weight: bold;
+  color: #ffffff;
 }
 
-.scroll-container {
-  flex: 1;
+.list {
+  position: absolute;
+  top: 76px;
+  left: 12px;
+  right: 12px;
+  bottom: 72px;
   flex-direction: column;
 }
 
-.slot-wrapper {
-  width: 100%;
-  padding: 5px 0;
-  justify-content: center;
-}
-
 .card {
-  width: 88%;
-  min-height: 68px;
-  background-color: #cf89f8;
-  border-radius: 12px;
-  padding: 8px;
+  width: 100%;
+  min-height: 64px;
+  margin-bottom: 8px;
+  padding: 12px 18px;
+  background-color: #262626;
+  border-radius: 20px;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
 }
 
-/* 自动存档槽：紫色高亮边框，标识自动专用 */
+.card:active {
+  background-color: #333333;
+}
+
 .auto-card {
-  background-color: rgba(207, 137, 248, 0.35);
-  border: 1px solid #cf89f8;
+  background-color: rgba(13, 110, 255, 0.12);
+  border-width: 1px;
+  border-color: rgba(13, 110, 255, 0.4);
 }
 
 .card-content {
   flex-direction: column;
   width: 100%;
+}
+
+.card-header-row {
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
-.chap-name {
-  color: #000000;
-  font-size: 14px;
+.card-title {
+  font-size: 19px;
   font-weight: bold;
-  margin-bottom: 2px;
+  color: #ffffff;
 }
 
-.prev-text {
-  color: #1a1a1a;
-  font-size: 12px;
+.status-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.card-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
   lines: 1;
   margin-bottom: 2px;
 }
 
-.date-text {
-  color: #444444;
-  font-size: 11px;
+.card-date {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.footer-bar {
-  height: 54px;
-  background-color: #333333;
-  margin: 8px;
-  border-radius: 15px;
+.card-empty {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+}
+
+.empty-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.empty-text {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footer {
+  position: absolute;
+  bottom: 16px;
+  left: 12px;
+  right: 12px;
+  height: 48px;
+  background-color: #262626;
+  border-radius: 24px;
   justify-content: center;
   align-items: center;
 }
 
+.footer:active {
+  background-color: #333333;
+}
+
 .footer-text {
-  color: #ffffff;
-  font-size: 16px;
+  font-size: 21px;
   font-weight: bold;
+  color: #ffffff;
 }
 </style>

@@ -1,5 +1,5 @@
 <!-- 魔女的夜宴 × VN 引擎 v1.1
-     UI 基线 1.3.0（自动保存/自动播放/屏幕常亮/纯黑模式/振动反馈/上一句/SD拖动/时间显示）
+     UI 基线 2.0（官方穿戴设计风格：深灰药丸卡片 + 蓝色强调色）
      引擎基线 VN-1.1（立绘三槽位/BGM/特效/多槽存档/变量系统/内容包解耦） -->
 <template>
   <div
@@ -10,15 +10,51 @@
     ontouchmove="pageTouchMove"
     ontouchend="pageTouchEnd"
   >
-    <!-- 无图版：不渲染背景图、立绘、EV、SD，底色纯黑 -->
+    <image class="bg-image" if="false" src="{{ '/common/bg/' + currentBg + '.jpg' }}"></image>
 
-    <!-- 特效层（whiteflash/blackout/fadein/fadeout，引擎 fxManager 驱动） -->
+    <!-- 立绘三槽位 -->
+    <image
+      if="{{ characters.left && !settings.darkMode }}"
+      class="sprite sprite-left {{ characters.left.action }}"
+      src="{{ '/common/ch/' + characters.left.key + '.png' }}"
+    ></image>
+    <image
+      if="{{ characters.center && !settings.darkMode }}"
+      class="sprite sprite-center {{ characters.center.action }}"
+      src="{{ '/common/ch/' + characters.center.key + '.png' }}"
+    ></image>
+    <image
+      if="{{ characters.right && !settings.darkMode }}"
+      class="sprite sprite-right {{ characters.right.action }}"
+      src="{{ '/common/ch/' + characters.right.key + '.png' }}"
+    ></image>
+
+    <!-- EV 事件图 -->
+    <image
+      class="ev-image"
+      if="{{ currentEV && !settings.darkMode }}"
+      src="{{ '/common/ev/' + currentEV + '.jpg' }}"
+    ></image>
+
+    <!-- SD 事件图 -->
+    <image
+      class="sd-image"
+      if="{{ currentSD && !settings.darkMode }}"
+      src="{{ '/common/sd/' + currentSD + '.jpg' }}"
+      style="left: {{ sdLeft }}px; top: {{ sdTop }}px"
+      ontouchstart="sdTouchStart"
+      ontouchmove="sdTouchMove"
+      ontouchend="sdTouchEnd"
+      @click="stopClick"
+    ></image>
+
+    <!-- 特效层 -->
     <div class="fx-overlay {{ fxClass }}" if="{{ fxActive }}"></div>
 
     <div class="dialogue-layer" if="{{ !isLoading && !isSkipping && !showOptions && !isUIHidden }}">
       <div class="speaker-box" if="{{ currentSpeaker }}">
         <text class="speaker-text">{{ currentSpeaker }}</text>
-        <div class="prev-line-button" @click="goToPrevLine">
+        <div class="prev-line-btn" @click="goToPrevLine">
           <text class="prev-line-text">上一句</text>
         </div>
       </div>
@@ -42,7 +78,7 @@
       <div class="options-container">
         <div
           for="{{ (index, item) in currentOptions }}"
-          class="option-button"
+          class="option-btn"
           @click="handleOptionClick(index)"
         >
           <text class="option-text">{{ item.text }}</text>
@@ -50,49 +86,53 @@
       </div>
     </div>
 
-    <!-- 控制层（隐藏UI / 快进，快进改用触摸计时防误触） -->
+    <!-- 控制层 -->
     <div class="control-layer" @click="stopClick">
-      <div class="control-button" @click="toggleUIVisibility">
-        <text class="control-button-text">{{ isUIHidden ? "显示" : "隐藏" }}</text>
+      <div class="control-btn" @click="toggleUIVisibility">
+        <text class="control-btn-text">{{ isUIHidden ? "显示" : "隐藏" }}</text>
       </div>
-
       <div
-        class="control-button"
+        class="control-btn"
         ontouchstart="ffTouchStart"
         ontouchmove="ffTouchMove"
         ontouchend="ffTouchEnd"
         if="{{ !isUIHidden }}"
       >
-        <text class="control-button-text">快进</text>
+        <text class="control-btn-text">快进</text>
       </div>
     </div>
 
-    <!-- 侧滑/长按菜单部分 -->
+    <!-- 菜单 -->
     <div class="menu-overlay" if="{{ showSwipeMenu }}">
+      <image
+        class="bg-image"
+        if="false"
+        style="opacity: 0.4"
+        src="{{ '/common/bg/' + currentBg + '.jpg' }}"
+      ></image>
+
       <div class="menu-container" @click="stopClick">
         <text class="menu-time">{{ currentTime }}</text>
         <text class="menu-title">菜单</text>
 
         <scroll scroll-y="true" class="menu-scroll">
-          <div class="menu-grid">
-            <div class="menu-button" @click="saveGame">
-              <text class="menu-button-text">保存进度</text>
-            </div>
-            <div class="menu-button" @click="routeLoad">
-              <text class="menu-button-text">读取进度</text>
-            </div>
-            <div class="menu-button" @click="skipToOptions">
-              <text class="menu-button-text">跳过到下一个选项</text>
-            </div>
-            <div class="menu-button {{ isAutoPlay ? 'auto-on' : '' }}" @click="toggleAutoPlay">
-              <text class="menu-button-text">{{ isAutoPlay ? "自动播放：开" : "自动播放：关" }}</text>
-            </div>
-            <div class="menu-button" @click="returnToHome">
-              <text class="menu-button-text">返回主页</text>
-            </div>
-            <div class="menu-button close-button" @click="closeMenu">
-              <text class="menu-button-text">返回游戏</text>
-            </div>
+          <div class="menu-btn" @click="saveGame">
+            <text class="menu-btn-text">保存进度</text>
+          </div>
+          <div class="menu-btn" @click="routeLoad">
+            <text class="menu-btn-text">读取进度</text>
+          </div>
+          <div class="menu-btn" @click="skipToOptions">
+            <text class="menu-btn-text">跳到下一个选项</text>
+          </div>
+          <div class="menu-btn {{ isAutoPlay ? 'menu-btn-active' : '' }}" @click="toggleAutoPlay">
+            <text class="menu-btn-text">{{ isAutoPlay ? "自动播放：开" : "自动播放：关" }}</text>
+          </div>
+          <div class="menu-btn" @click="returnToHome">
+            <text class="menu-btn-text">返回主页</text>
+          </div>
+          <div class="menu-btn menu-btn-close" @click="closeMenu">
+            <text class="menu-btn-text">返回游戏</text>
           </div>
         </scroll>
       </div>
@@ -111,20 +151,15 @@ import router from "@system.router"
 import prompt from "@system.prompt"
 import brightness from "@system.brightness"
 
-// 自动保存节流间隔（ms）：进度实时但写入限频，避免频繁擦写存储
 const AUTO_SAVE_INTERVAL = 3000
-// 自动播放间隔（ms）
 const AUTO_PLAY_DELAY = 500
-// 长按阈值（ms）：比系统默认更长，避免回退操作时误触
 const LONG_PRESS_DELAY = 600
-// SD 图宽超出屏宽的最大可拖偏移（240 - 212 = 28）
 const SD_MAX_LEFT = 0
 const SD_MIN_LEFT = -28
 const DEFAULT_BG = "空_青空"
 
 export default {
   private: {
-    // ---- 引擎状态（onState 同步）----
     currentBg: DEFAULT_BG,
     currentEV: "",
     currentSD: "",
@@ -139,12 +174,10 @@ export default {
     isSkipping: false,
     ended: false,
 
-    // ---- 引擎实例（不参与模板渲染）----
     _engine: null,
     _rt: null,
     _pendingRestore: null,
 
-    // ---- UI 状态 ----
     displayText: "",
     currentCharIndex: 0,
     showSwipeMenu: false,
@@ -155,19 +188,15 @@ export default {
     fxClass: "",
     _fxTimer: null,
 
-    // 底部时间
     bottomTime: "00:00",
     bottomTimeTimer: null,
 
-    // 自动播放
     isAutoPlay: false,
     autoPlayTimer: null,
 
-    // 自动保存
     autoSaveEnabled: true,
     lastAutoSaveAt: 0,
 
-    // 长按（自定义触摸计时，防误触）
     pageTouched: false,
     pageMoved: false,
     pageLongTimer: null,
@@ -176,14 +205,12 @@ export default {
     ffLongPressTimer: null,
     menuJustOpened: false,
 
-    // SD 图拖动
     sdLeft: -14,
     sdTop: 40,
     sdDragStartX: 0,
     sdDragStartLeft: 0,
     sdDragMoved: false,
 
-    // 状态与设置（窄屏适配：默认字号 22 = 原 18 的 1.25 倍）
     isLoading: true,
     settings: {
       textSpeed: 40,
@@ -191,12 +218,10 @@ export default {
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
-      darkMode: false,
+      darkMode: true,
       vibration: true
     }
   },
-
-  // ---------- 生命周期 ----------
 
   onDestroy() {
     this.clearTimer()
@@ -208,7 +233,6 @@ export default {
     if (this._fxTimer) clearTimeout(this._fxTimer)
     if (this._rt) this._rt.destroy()
 
-    // 离开阅读页时关闭常亮
     try {
       brightness.setKeepScreenOn({ keepScreenOn: false })
     } catch (e) {}
@@ -224,7 +248,6 @@ export default {
   },
 
   onInit() {
-    // 读取系统设置（文字速度、字号等）
     storage.get({
       key: SETTINGS_KEY,
       success: (data) => {
@@ -232,21 +255,15 @@ export default {
           try {
             const parsed = JSON.parse(data)
             Object.assign(this.settings, parsed)
-            if (DEBUG) console.log("[Game/System] 设置加载成功")
-          } catch (e) {
-            if (DEBUG) console.error("[Game/System] 解析设置失败")
-          }
+          } catch (e) {}
         }
       }
     })
-
     this.bootEngine()
   },
 
   onShow() {
     const stateToLoad = this.$app.$def.globalGameState
-
-    // 从「读取」（手动存档槽）进入时禁用自动保存，仍靠手动保存
     this.autoSaveEnabled = !(stateToLoad && stateToLoad._fromLoad)
     if (stateToLoad && stateToLoad._fromLoad) {
       delete stateToLoad._fromLoad
@@ -257,16 +274,13 @@ export default {
       this._pendingRestore = stateToLoad
       if (this._rt) this.doRestore(stateToLoad)
     } else if (this._rt && !this._rt.scnId) {
-      // 首次进入：从内容包默认场景开始
       this.loadDefault()
     }
 
-    // 应用屏幕常亮（自动播放或常亮开关）
     this.applyKeepScreenOn()
     this.startBottomTime()
   },
 
-  /** 创建引擎实例（异步，就绪后处理挂起的读档/默认进度） */
   async bootEngine() {
     try {
       const adapter = createAiotAdapter()
@@ -286,7 +300,6 @@ export default {
     } catch (e) {
       this.isLoading = false
       this.displayText = "引擎初始化失败: " + (e && e.message)
-      if (DEBUG) console.error("[Game/Engine] boot 失败: " + e.message)
     }
   },
 
@@ -298,7 +311,6 @@ export default {
     })
   },
 
-  /** 引擎状态 → 页面展示字段 */
   syncState(s) {
     this.currentBg = s.bg || DEFAULT_BG
     this.currentEV = s.ev || ""
@@ -313,7 +325,6 @@ export default {
     this.ended = s.ended
     this.isLoading = false
 
-    // 对话文本：新一句 → 打字机；完成态 → 直接全文
     const newLine = s.fullText !== this.fullText || !s.isTextComplete
     this.fullText = s.fullText || ""
     if (s.isTextComplete) {
@@ -328,8 +339,6 @@ export default {
     }
   },
 
-  // ---------- 打字机 ----------
-
   startTypeWriter() {
     this.clearTimer()
 
@@ -342,7 +351,6 @@ export default {
       this.displayText += this.fullText.charAt(this.currentCharIndex)
       this.currentCharIndex++
       const speed = this.isFastForwarding ? 2 : this.settings.textSpeed
-
       this.typeWriterTimer = setTimeout(() => this.startTypeWriter(), speed)
 
       if (this.currentCharIndex % 5 === 0 && this.displayText.length > 20) {
@@ -350,7 +358,6 @@ export default {
         if (sc) sc.scrollTo({ top: 9999, behavior: "instant" })
       }
     } else {
-      // 打字完成：通知引擎全文可见，并驱动自动播放
       this.finishText()
     }
   },
@@ -361,7 +368,6 @@ export default {
     this.isTextComplete = true
     if (this._rt) this._rt.markTextComplete()
 
-    // 自动播放：整句完整显示后等待 AUTO_PLAY_DELAY 自动进入下一句
     if (this.isAutoPlay && !this.showOptions && !this.isSkipping && !this.isFastForwarding) {
       this.clearAutoPlayTimer()
       this.autoPlayTimer = setTimeout(() => {
@@ -375,21 +381,15 @@ export default {
     this._rt.advance()
   },
 
-  // ---------- 点击/推进 ----------
-
   handleScreenClick() {
-    // 长按唤菜单刚结束时的误点击，吞掉防止同时翻句
     if (this.menuJustOpened) {
       this.menuJustOpened = false
       return
     }
 
     if (this.showSwipeMenu || this.isLoading || this.showOptions) return
-
-    // 任意点击触发振动反馈
     this.vibrateIfEnabled()
 
-    // UI隐藏时点击屏幕显示UI
     if (this.isUIHidden) {
       this.toggleUIVisibility()
       return
@@ -403,7 +403,6 @@ export default {
     if (!this.isTextComplete) {
       this.finishText()
     } else {
-      // 手动点击时取消自动播放计时，立即翻句
       this.clearAutoPlayTimer()
       this.advanceLine()
     }
@@ -426,8 +425,6 @@ export default {
     if (this._rt) this._rt.choose(index)
   },
 
-  // ---------- 快进/跳过 ----------
-
   doFastForward() {
     if (this._rt) this._rt.doFastForward()
   },
@@ -441,8 +438,6 @@ export default {
     if (this._rt) this._rt.skipToNextSelect()
   },
 
-  // ---------- 上一句 ----------
-
   goToPrevLine(event) {
     if (event && event.stopPropagation) event.stopPropagation()
     this.vibrateIfEnabled()
@@ -452,7 +447,7 @@ export default {
     let idx = this._rt.lineIndex - 1
     while (idx >= 0) {
       const n = this._rt.scriptData[idx]
-      if (n && n[0] === 3) break // DIALOGUE
+      if (n && n[0] === 3) break
       idx--
     }
 
@@ -465,9 +460,6 @@ export default {
     this._rt.load(scnId, idx).catch(() => {})
   },
 
-  // ---------- 存档/读档 ----------
-
-  /** 保存进度：构造引擎存档数据，跳存档页选择槽位 */
   saveGame() {
     this.vibrateIfEnabled()
     if (!this._rt) return
@@ -485,7 +477,6 @@ export default {
     router.push({ uri: "pages/data" })
   },
 
-  /** 恢复引擎存档（兼容新格式 {scnId,...} 与旧版 {currentScnId,...}） */
   async doRestore(saved) {
     this.isLoading = true
     try {
@@ -496,29 +487,21 @@ export default {
     } catch (e) {
       this.isLoading = false
       this.displayText = "读档失败: " + (e && e.message)
-      if (DEBUG) console.error("[Game/IO] 读档失败: " + e.message)
     }
   },
 
-  /*
-      自动保存（节流实时写入）
-  */
   maybeAutoSave() {
     if (!this.autoSaveEnabled) return
     if (!this.settings || this.settings.autoSave === false) return
-
     const now = Date.now()
     if (now - this.lastAutoSaveAt < AUTO_SAVE_INTERVAL) return
-
     this.writeAutoSave()
     this.lastAutoSaveAt = now
   },
 
-  // 退出/返回主页时强制执行一次自动保存
   forceAutoSave() {
     if (!this.autoSaveEnabled) return
     if (!this.settings || this.settings.autoSave === false) return
-
     this.writeAutoSave()
     this.lastAutoSaveAt = Date.now()
   },
@@ -526,13 +509,11 @@ export default {
   writeAutoSave() {
     if (!this._rt) return
     const gameState = this._rt.save()
-
     const rawText = this.fullText || ""
     let previewContent = "..."
     if (rawText) {
       previewContent = rawText.length > 10 ? rawText.substring(0, 10) + "..." : rawText
     }
-
     const now = new Date()
     const month = now.getMonth() + 1
     const day = now.getDate()
@@ -546,11 +527,8 @@ export default {
       preview: previewContent,
       gameState: gameState
     }
-
     storage.set({ key: AUTO_SAVE_KEY, value: JSON.stringify(entry) })
   },
-
-  // ---------- 特效（引擎 fxManager 驱动） ----------
 
   playFx(name) {
     const map = {
@@ -573,8 +551,6 @@ export default {
     }, ms)
   },
 
-  // ---------- UI 菜单 ----------
-
   closeMenu(event) {
     if (event && event.stopPropagation) event.stopPropagation()
     this.showSwipeMenu = false
@@ -595,21 +571,16 @@ export default {
 
   toggleUIVisibility() {
     this.isUIHidden = !this.isUIHidden
-    if (DEBUG) console.log("[Game/UI] UI可见性切换: isUIHidden: " + this.isUIHidden)
   },
 
   returnToHome() {
-    // 退出阅读前强制保存一次
     const willAutoSave = this.autoSaveEnabled && this.settings && this.settings.autoSave !== false
     this.forceAutoSave()
-
     this.clearAutoPlayTimer()
     this.stopBottomTime()
-
     if (willAutoSave) {
       prompt.showToast({ message: "进度已自动保存" })
     }
-
     router.replace({ uri: "pages/index" })
   },
 
@@ -624,23 +595,16 @@ export default {
     if (this._rt) this._rt.clearFastForward()
   },
 
-  /*
-      自动播放
-  */
   toggleAutoPlay() {
     this.vibrateIfEnabled()
     this.isAutoPlay = !this.isAutoPlay
-
-    // 自动播放开启时同步启用屏幕常亮
     this.applyKeepScreenOn()
-
     if (this.isAutoPlay) {
       prompt.showToast({ message: "自动播放已开启" })
     } else {
       this.clearAutoPlayTimer()
       prompt.showToast({ message: "自动播放已关闭" })
     }
-
     this.closeMenu()
   },
 
@@ -651,9 +615,6 @@ export default {
     }
   },
 
-  /*
-      屏幕常亮
-  */
   applyKeepScreenOn() {
     const on = this.isAutoPlay || (this.settings && this.settings.keepScreenOn)
     try {
@@ -661,9 +622,6 @@ export default {
     } catch (e) {}
   },
 
-  /*
-      底部时间
-  */
   startBottomTime() {
     this.stopBottomTime()
     this.updateBottomTime()
@@ -687,22 +645,15 @@ export default {
       now.getMinutes().toString().padStart(2, "0")
   },
 
-  /*
-      振动反馈
-  */
   vibrateIfEnabled() {
     if (this.settings && this.settings.vibration === false) return
     vibrateShort()
   },
 
-  /*
-      长按：自定义触摸计时（阈值 LONG_PRESS_DELAY，移动即取消）
-  */
   pageTouchStart() {
     this.pageTouched = true
     this.pageMoved = false
     this.clearPageLongTimer()
-
     this.pageLongTimer = setTimeout(() => {
       if (
         this.pageTouched &&
@@ -734,17 +685,12 @@ export default {
     }
   },
 
-  /*
-      快进按钮：触摸计时触发（不再用系统 longpress，避免回退误触）
-  */
   ffTouchStart(event) {
     if (event && event.stopPropagation) event.stopPropagation()
     if (this.showOptions) return
-
     this.ffTouched = true
     this.ffMoved = false
     this.clearFFLongPressTimer()
-
     this.ffLongPressTimer = setTimeout(() => {
       if (this.ffTouched && !this.ffMoved) {
         this.doFastForward()
@@ -773,9 +719,6 @@ export default {
     }
   },
 
-  /*
-      SD 插图：原图尺寸显示、与背景同级、支持左右拖动
-  */
   sdTouchStart(event) {
     if (event && event.stopPropagation) event.stopPropagation()
     const touch = event.touches && event.touches[0]
@@ -788,7 +731,6 @@ export default {
     if (event && event.stopPropagation) event.stopPropagation()
     const touch = event.touches && event.touches[0]
     if (!touch) return
-
     this.sdDragMoved = true
     const delta = touch.clientX - this.sdDragStartX
     let nextLeft = this.sdDragStartLeft + delta
@@ -801,7 +743,6 @@ export default {
   }
 }
 
-/** 存档格式归一化：兼容新引擎 {scnId,...} 与旧版 {currentScnId,...} */
 function normalizeSave(s) {
   if (!s) return s
   if (s.scnId) return s
@@ -832,10 +773,9 @@ function normalizeSave(s) {
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 1; /* 最底层 */
+  z-index: 1;
 }
 
-/* 立绘三槽位：绝对定位，z-index 2-4（高于背景低于 SD/对话框） */
 .sprite {
   position: absolute;
   bottom: 0;
@@ -858,7 +798,6 @@ function normalizeSave(s) {
   height: 78%;
 }
 
-/* 立绘动作动画（@keyframes 支持 opacity/transform） */
 .sprite.fadein {
   animation: char-fadein 300ms ease-out;
 }
@@ -885,10 +824,9 @@ function normalizeSave(s) {
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 5; /* 层级高于背景 */
+  z-index: 5;
 }
 
-/* SD 图按原图 240x144 尺寸显示（超出屏宽 212，可左右拖动查看），层级与背景同级 */
 .sd-image {
   position: absolute;
   width: 240px;
@@ -896,7 +834,6 @@ function normalizeSave(s) {
   z-index: 1;
 }
 
-/* 特效层：覆盖全屏，靠透明度动画呈现白闪/黑场 */
 .fx-overlay {
   position: absolute;
   left: 0;
@@ -942,169 +879,80 @@ function normalizeSave(s) {
   padding: 8px;
   width: 100%;
   height: 100%;
-
   z-index: 10;
 }
 
-/* 说话人行：人名 + 上一句按钮（同顶部控制按钮构造） */
 .speaker-box {
   position: absolute;
-  bottom: 190px; /* 跟随对话框（150px 高）上移 */
+  bottom: 190px;
   left: 12px;
   right: 12px;
-
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-
-  background-color: rgba(207, 137, 248, 0.8);
-  padding: 6px 12px;
-
-  border-radius: 6px;
+  background-color: rgba(13, 110, 255, 0.85);
+  padding: 6px 14px;
+  border-radius: 16px;
   margin-bottom: 3px;
 }
 
 .speaker-text {
-  font-size: 15px;
+  font-size: 18px;
   color: #ffffff;
   font-weight: bold;
 }
 
-.prev-line-button {
-  padding: 6px 12px;
+.prev-line-btn {
+  padding: 4px 14px;
   background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
+  border-radius: 12px;
   justify-content: center;
   align-items: center;
 }
 
 .prev-line-text {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .dialogue-box {
   position: absolute;
-
   bottom: 20px;
   left: 12px;
   right: 12px;
-
-  height: 150px; /* 原 120px 的 1.25 倍 */
-
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  height: 150px;
+  background-color: rgba(38, 38, 38, 0.92);
+  border-radius: 20px;
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.1);
   display: flex;
 }
 
 .scroll-view {
   width: 100%;
   height: 100%;
-
-  /* 开启多行排列，允许内容向下延伸 */
   flex-wrap: wrap;
   padding: 14px;
 }
 
 .typewriter-text {
-  /* 强制占满父宽，同时锁定左侧对齐起点 */
   width: 100%;
-
   color: #ffffff;
   text-align: left;
   padding: 0;
   margin: 0;
 }
 
-/* 底部居中时间（字号与人名一致 15px） */
 .bottom-time {
   position: absolute;
   bottom: 2px;
   left: 0;
   right: 0;
   text-align: center;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 15px;
 }
 
-.menu-overlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-
-  z-index: 30;
-  background-color: rgba(0, 0, 0, 0.8);
-}
-
-/* 菜单容器（内容可滚动，容纳更多按钮） */
-.menu-container {
-  width: 85%;
-  height: 85%;
-  padding: 12px;
-  background-color: rgba(0, 0, 0, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  flex-direction: column;
-  align-items: center;
-}
-
-.menu-title {
-  color: #cf89f8;
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.menu-scroll {
-  width: 100%;
-  flex: 1;
-  flex-direction: column;
-}
-
-.menu-grid {
-  flex-direction: column;
-  width: 100%;
-}
-
-/* 按钮样式（字号 15 -> 19，1.25 倍） */
-.menu-button {
-  width: 100%;
-  height: 50px;
-  margin-bottom: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  justify-content: center;
-  align-items: center;
-}
-
-.auto-on {
-  background-color: rgba(207, 137, 248, 0.5);
-}
-
-.close-button {
-  background-color: rgba(207, 137, 248, 0.3);
-  margin-top: 6px;
-}
-
-.menu-button-text {
-  color: #ffffff;
-  font-size: 19px;
-}
-
-.menu-time {
-  color: #ffffff;
-  font-size: 12px;
-  text-align: center;
-  margin-bottom: 6px;
-}
-
-/* 选项部分 */
 .options-overlay {
   position: absolute;
   top: 0;
@@ -1115,57 +963,128 @@ function normalizeSave(s) {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 12px;
   z-index: 20;
-
-  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .options-container {
-  width: 85%;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.option-button {
+.option-btn {
   width: 100%;
-  background-color: rgba(207, 137, 248, 0.8);
-  padding: 14px;
-  margin: 5px 0;
-  border-radius: 8px;
+  background-color: #0d6eff;
+  padding: 16px;
+  margin: 6px 0;
+  border-radius: 24px;
   justify-content: center;
-  border: 1px solid rgba(207, 137, 248, 0.6);
+  align-items: center;
+}
+
+.option-btn:active {
+  background-color: #0a55c4;
 }
 
 .option-text {
   color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: bold;
   text-align: center;
 }
 
-/* 控制层（快进按钮 1.25 倍） */
 .control-layer {
   position: absolute;
   top: 6px;
   left: 0;
   right: 0;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  justify-content: center;
   z-index: 15;
 }
 
-.control-button {
-  padding: 10px 20px;
-  margin-bottom: 8px;
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
+.control-btn {
+  padding: 8px 18px;
+  margin: 0 4px;
+  background-color: rgba(38, 38, 38, 0.85);
+  border-radius: 16px;
   justify-content: center;
   align-items: center;
 }
 
-.control-button-text {
+.control-btn-text {
   color: #ffffff;
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.menu-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 30;
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.menu-container {
+  width: 86%;
+  height: 88%;
+  padding: 16px;
+  background-color: #1a1a1a;
+  border-radius: 24px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-time {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.menu-title {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.menu-scroll {
+  width: 100%;
+  flex: 1;
+  flex-direction: column;
+}
+
+.menu-btn {
+  width: 100%;
+  height: 52px;
+  margin-bottom: 8px;
+  background-color: #262626;
+  border-radius: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-btn:active {
+  background-color: #333333;
+}
+
+.menu-btn-active {
+  background-color: rgba(13, 110, 255, 0.25);
+}
+
+.menu-btn-close {
+  background-color: #0d6eff;
+  margin-top: 4px;
+}
+
+.menu-btn-text {
+  color: #ffffff;
+  font-size: 19px;
 }
 </style>
