@@ -2,49 +2,47 @@
   <div class="page" @swipe="swipeBack" @longpress="longPressBack">
     <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
 
+    <!-- 顶部标题 -->
     <div class="header">
-      <text class="title">关于</text>
+      <text class="header-title">关于</text>
     </div>
 
-    <div class="main-container">
-      <!-- 上方卡片 -->
-      <div class="app-card">
-        <image class="app-icon" if="{{ !settings.darkMode }}" src="/common/logo.png"></image>
-        <div class="app-info">
-          <text class="app-name">魔女的夜宴 Band 9/10/11</text>
-          <text class="app-version">v{{ appVersion }}</text>
+    <scroll scroll-y="true" class="list">
+      <!-- 应用信息卡片 -->
+      <div class="card">
+        <div class="app-row">
+          <image class="app-icon" if="{{ !settings.darkMode }}" src="/common/logo.png"></image>
+          <div class="app-info">
+            <text class="app-name">魔女的夜宴</text>
+            <text class="app-version">Band 9/10/11 · v{{ appVersion }}</text>
+          </div>
         </div>
       </div>
 
-      <!-- 下方信息栏 -->
-      <div class="details-container">
-        <div class="detail-item">
-          <text class="detail-label">作者</text>
-          <text class="detail-content">futrw4v（原版）/ hrk_（9/10/11 适配）</text>
-        </div>
-
-        <div class="detail-item">
-          <text class="detail-label">上游仓库</text>
-          <text class="detail-content">futrw4v/Sanoba-Witch-MiBand-9Pro</text>
-        </div>
-
-        <div class="detail-item">
-          <text class="detail-label">协议</text>
-          <text class="detail-content">GNU GPL v3.0</text>
-        </div>
-
-        <div class="detail-item">
-          <text class="detail-label">说明</text>
-          <text class="detail-content">请不要用于商业用途</text>
-        </div>
-
-        <!-- 新增：返回载入进度页 -->
-        <div class="detail-item" @click="routeLoad">
-          <text class="detail-label">返回载入进度页</text>
-          <text class="detail-content">点击前往读取存档</text>
-        </div>
+      <!-- 信息列表 -->
+      <div class="card">
+        <text class="info-label">作者</text>
+        <text class="info-value">futrw4v（原版）/ hrk_（适配）</text>
       </div>
-    </div>
+      <div class="card">
+        <text class="info-label">上游仓库</text>
+        <text class="info-value">Sanoba-Witch-MiBand-9Pro</text>
+      </div>
+      <div class="card">
+        <text class="info-label">协议</text>
+        <text class="info-value">GNU GPL v3.0</text>
+      </div>
+      <div class="card">
+        <text class="info-label">说明</text>
+        <text class="info-value">请勿用于商业用途</text>
+      </div>
+
+      <!-- 返回存档 -->
+      <div class="card card-action" @click="routeLoad">
+        <text class="info-label">返回载入进度页</text>
+        <image class="arrow" src="/common/images/enter.png"></image>
+      </div>
+    </scroll>
   </div>
 </template>
 
@@ -95,39 +93,52 @@ export default {
 }
 
 .header {
-  height: 52px;
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  height: 44px;
   justify-content: center;
   align-items: center;
 }
 
-.title {
-  color: #cf89f8;
-  font-size: 17px;
+.header-title {
+  font-size: 26px;
   font-weight: bold;
+  color: #ffffff;
 }
 
-.main-container {
-  flex: 1;
+.list {
+  position: absolute;
+  top: 76px;
+  left: 12px;
+  right: 12px;
+  bottom: 16px;
   flex-direction: column;
-  align-items: center;
-  padding: 0 15px;
 }
 
-.app-card {
+.card {
   width: 100%;
-  background-color: #cf89f8;
-  border-radius: 12px;
-  padding: 12px;
+  margin-bottom: 8px;
+  padding: 14px 18px;
+  background-color: #262626;
+  border-radius: 20px;
+  flex-direction: column;
+}
+
+.card:active {
+  background-color: #333333;
+}
+
+.app-row {
   flex-direction: row;
   align-items: center;
-  margin-bottom: 15px;
 }
 
 .app-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  margin-right: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  margin-right: 14px;
 }
 
 .app-info {
@@ -136,35 +147,36 @@ export default {
 }
 
 .app-name {
-  color: #1a1a1a;
-  font-size: 15px;
+  font-size: 22px;
   font-weight: bold;
-  lines: 2;
+  color: #ffffff;
 }
 
 .app-version {
-  color: #333333;
-  font-size: 12px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
 }
 
-.details-container {
-  width: 100%;
-  flex-direction: column;
+.info-label {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
 }
 
-.detail-item {
-  flex-direction: column;
-  margin-bottom: 10px;
-}
-
-.detail-label {
-  color: #cf89f8;
-  font-size: 17px; /* 原 13px 的约 1.3 倍 */
-  margin-bottom: 1px;
-}
-
-.detail-content {
+.info-value {
+  font-size: 19px;
   color: #ffffff;
-  font-size: 18px; /* 原 14px 的约 1.3 倍 */
+}
+
+.card-action {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arrow {
+  width: 24px;
+  height: 24px;
 }
 </style>

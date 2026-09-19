@@ -3,33 +3,37 @@
     <!-- 背景（纯黑模式不渲染图片） -->
     <image class="bg-image" if="{{ !settings.darkMode }}" src="/common/title_bg.jpg"></image>
 
-    <!-- 按钮区域 - flex 自适应布局（手环 9/10/11 通吃） -->
-    <div class="button-container">
-      <stack class="stack-button" @click="routeContinue">
-        <text class="text-button text-shadow">继续游戏</text>
-        <text class="text-button">继续游戏</text>
-      </stack>
-      <stack class="stack-button" @click="routeGame">
-        <text class="text-button text-shadow">重开</text>
-        <text class="text-button">重开</text>
-      </stack>
-      <stack class="stack-button" @click="routeLoad">
-        <text class="text-button text-shadow">载入进度</text>
-        <text class="text-button">载入进度</text>
-      </stack>
-      <stack class="stack-button" @click="routeSetting">
-        <text class="text-button text-shadow">系统设定</text>
-        <text class="text-button">系统设定</text>
-      </stack>
-      <stack class="stack-button" @click="routeAbout">
-        <text class="text-button text-shadow">关于本篇</text>
-        <text class="text-button">关于本篇</text>
-      </stack>
-      <stack class="stack-button" @click="exitApp">
-        <text class="text-button text-shadow">退出游戏</text>
-        <text class="text-button">退出游戏</text>
-      </stack>
+    <!-- 顶部标题区 -->
+    <div class="header">
+      <text class="header-title">魔女的夜宴</text>
     </div>
+
+    <!-- 药丸卡片列表 -->
+    <scroll scroll-y="true" class="list">
+      <div class="item" @click="routeContinue">
+        <text class="itemtext">继续游戏</text>
+        <image class="arrow" src="/common/images/enter.png"></image>
+      </div>
+      <div class="item" @click="routeGame">
+        <text class="itemtext">重开</text>
+        <image class="arrow" src="/common/images/enter.png"></image>
+      </div>
+      <div class="item" @click="routeLoad">
+        <text class="itemtext">载入进度</text>
+        <image class="arrow" src="/common/images/enter.png"></image>
+      </div>
+      <div class="item" @click="routeSetting">
+        <text class="itemtext">系统设定</text>
+        <image class="arrow" src="/common/images/enter.png"></image>
+      </div>
+      <div class="item" @click="routeAbout">
+        <text class="itemtext">关于本篇</text>
+        <image class="arrow" src="/common/images/enter.png"></image>
+      </div>
+      <div class="item item-danger" @click="exitApp">
+        <text class="itemtext itemtext-danger">退出游戏</text>
+      </div>
+    </scroll>
   </div>
 </template>
 
@@ -85,7 +89,6 @@ export default {
     vibrateShort()
   },
 
-  // 继续游戏：读取自动存档直接进入
   routeContinue() {
     if (this.isNavigating) return
     this.isNavigating = true
@@ -125,7 +128,6 @@ export default {
     if (this.isNavigating) return
     this.isNavigating = true
     this.vibrateIfEnabled()
-    if (DEBUG) console.info("[Index] 跳转到游戏页面")
     router.push({uri: "/pages/game"})
     this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
   },
@@ -134,7 +136,6 @@ export default {
     if (this.isNavigating) return
     this.isNavigating = true
     this.vibrateIfEnabled()
-    if (DEBUG) console.info("[Index] 跳转到加载数据页面")
     router.push({uri: "/pages/data"})
     this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
   },
@@ -143,7 +144,6 @@ export default {
     if (this.isNavigating) return
     this.isNavigating = true
     this.vibrateIfEnabled()
-    if (DEBUG) console.info("[Index] 跳转到设置页面")
     router.push({uri: "/pages/settings"})
     this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
   },
@@ -152,7 +152,6 @@ export default {
     if (this.isNavigating) return
     this.isNavigating = true
     this.vibrateIfEnabled()
-    if (DEBUG) console.info("[Index] 跳转到关于页面")
     router.push({uri: "/pages/about"})
     this.navTimer = setTimeout(() => { this.isNavigating = false }, 2000)
   },
@@ -187,35 +186,62 @@ export default {
   left: 0;
 }
 
-.button-container {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 10px;
-}
-
-.stack-button {
-  width: 172px;
-  height: 48px;
-  margin: 5px 0;
-  justify-content: center;
-  align-items: center;
-}
-
-.text-button {
-  font-weight: bold;
-  font-size: 21px; /* 原 17px 的 1.25 倍 */
-  color: rgb(188, 72, 253);
-  text-align: center;
-}
-
-.text-shadow {
+.header {
   position: absolute;
-  color: #000000;
-  opacity: 0.6;
-  margin-top: 1px;
-  margin-left: 1px;
+  top: 20px;
+  width: 100%;
+  height: 44px;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.list {
+  position: absolute;
+  top: 80px;
+  left: 12px;
+  right: 12px;
+  bottom: 16px;
+  flex-direction: column;
+}
+
+.item {
+  width: 100%;
+  height: 56px;
+  margin-bottom: 8px;
+  padding: 0 18px;
+  background-color: #262626;
+  border-radius: 26px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item:active {
+  background-color: #333333;
+}
+
+.itemtext {
+  font-size: 23px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.arrow {
+  width: 24px;
+  height: 24px;
+}
+
+.item-danger {
+  background-color: rgba(255, 59, 48, 0.15);
+}
+
+.itemtext-danger {
+  color: #ff3b30;
 }
 </style>
