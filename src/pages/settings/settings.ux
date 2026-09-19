@@ -265,10 +265,6 @@ export default {
   justify-content: space-between;
 }
 
-.card:active {
-  background-color: #333333;
-}
-
 .card-label {
   font-size: 21px;
   font-weight: bold;
@@ -315,10 +311,6 @@ export default {
   border-radius: 24px;
   justify-content: center;
   align-items: center;
-}
-
-.footer-btn:active {
-  background-color: #0a55c4;
 }
 
 .footer-btn-text {

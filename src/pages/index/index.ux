@@ -222,10 +222,6 @@ export default {
   justify-content: space-between;
 }
 
-.item:active {
-  background-color: #333333;
-}
-
 .itemtext {
   font-size: 23px;
   font-weight: bold;
