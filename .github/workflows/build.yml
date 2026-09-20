@@ -35,5 +35,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sanoba-witch-rpk
-          path: dist/
+          path: |
+            dist/
+            build/
+            out/
+            **/*.rpk
           if-no-files-found: error
