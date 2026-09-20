@@ -48,6 +48,22 @@
     <div class="footer" @click="goBack">
       <text class="footer-text">返回</text>
     </div>
+
+    <!-- 确认弹窗 -->
+    <div class="confirm-overlay" if="{{ showConfirm }}">
+      <div class="confirm-dialog">
+        <text class="confirm-title">{{ confirmTitle }}</text>
+        <text class="confirm-message">{{ confirmMessage }}</text>
+        <div class="confirm-buttons">
+          <div class="confirm-btn confirm-btn-cancel" @click="cancelConfirm">
+            <text class="confirm-btn-text">取消</text>
+          </div>
+          <div class="confirm-btn confirm-btn-ok" @click="confirmOk">
+            <text class="confirm-btn-text">确定</text>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -66,7 +82,11 @@ export default {
   private: {
     saves: [null, null, null, null, null, null, null, null],
     incomingState: null,
-    autoSaveEntry: null
+    autoSaveEntry: null,
+    showConfirm: false,
+    confirmTitle: "",
+    confirmMessage: "",
+    confirmAction: null
   },
 
   onInit() {
@@ -162,22 +182,47 @@ export default {
   },
 
   doLoad(index) {
-    this.$app.$def.globalGameState = this.saves[index].gameState
-    this.$app.$def.globalGameState._fromLoad = true
-    router.replace({ uri: "pages/game" })
+    this.showConfirmDialog("读取进度", "将覆盖自动存档和当前进度，确定继续？", () => {
+      this.$app.$def.globalGameState = this.saves[index].gameState
+      this.$app.$def.globalGameState._fromLoad = true
+      router.replace({ uri: "pages/game" })
+    })
   },
 
   doLoadAuto() {
-    this.$app.$def.globalGameState = this.autoSaveEntry.gameState
-    router.replace({ uri: "pages/game" })
+    this.showConfirmDialog("读取进度", "将覆盖当前进度，确定继续？", () => {
+      this.$app.$def.globalGameState = this.autoSaveEntry.gameState
+      router.replace({ uri: "pages/game" })
+    })
   },
 
   handleDelete(index) {
     vibrateShort()
     if (!this.saves[index]) return
-    this.saves.splice(index, 1, null)
-    storage.set({key: SAVE_KEY, value: JSON.stringify(this.saves)})
-    prompt.showToast({message: "删除成功"})
+    this.showConfirmDialog("删除存档", "确定要删除此存档吗？", () => {
+      this.saves.splice(index, 1, null)
+      storage.set({key: SAVE_KEY, value: JSON.stringify(this.saves)})
+      prompt.showToast({message: "删除成功"})
+    })
+  },
+
+  showConfirmDialog(title, message, action) {
+    this.confirmTitle = title
+    this.confirmMessage = message
+    this.confirmAction = action
+    this.showConfirm = true
+  },
+
+  cancelConfirm() {
+    this.showConfirm = false
+    this.confirmAction = null
+  },
+
+  confirmOk() {
+    this.showConfirm = false
+    const action = this.confirmAction
+    this.confirmAction = null
+    if (action) action()
   },
 
   goBack() {
@@ -303,6 +348,68 @@ export default {
 
 .footer-text {
   font-size: 21px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.confirm-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.confirm-dialog {
+  width: 280px;
+  background-color: #262626;
+  border-radius: 20px;
+  padding: 24px 20px;
+  align-items: center;
+}
+
+.confirm-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.confirm-message {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 24px;
+}
+
+.confirm-buttons {
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.confirm-btn {
+  flex: 1;
+  height: 44px;
+  margin: 0 6px;
+  border-radius: 22px;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirm-btn-cancel {
+  background-color: #3a3a3a;
+}
+
+.confirm-btn-ok {
+  background-color: #0d6eff;
+}
+
+.confirm-btn-text {
+  font-size: 18px;
   font-weight: bold;
   color: #ffffff;
 }

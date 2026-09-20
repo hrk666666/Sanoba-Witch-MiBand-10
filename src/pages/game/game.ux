@@ -137,6 +137,22 @@
         </scroll>
       </div>
     </div>
+
+    <!-- 确认弹窗 -->
+    <div class="confirm-overlay" if="{{ showConfirm }}">
+      <div class="confirm-dialog">
+        <text class="confirm-title">{{ confirmTitle }}</text>
+        <text class="confirm-message">{{ confirmMessage }}</text>
+        <div class="confirm-buttons">
+          <div class="confirm-btn confirm-btn-cancel" @click="cancelConfirm">
+            <text class="confirm-btn-text">取消</text>
+          </div>
+          <div class="confirm-btn confirm-btn-ok" @click="confirmOk">
+            <text class="confirm-btn-text">确定</text>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -212,13 +228,19 @@ export default {
     sdDragMoved: false,
 
     isLoading: true,
+    showConfirm: false,
+    confirmTitle: "",
+    confirmMessage: "",
+    confirmAction: null,
     settings: {
       textSpeed: 40,
       textSize: 22,
+      autoPlayDelay: 500,
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
       darkMode: true,
+      lowBrightness: false,
       vibration: true
     }
   },
@@ -370,9 +392,10 @@ export default {
 
     if (this.isAutoPlay && !this.showOptions && !this.isSkipping && !this.isFastForwarding) {
       this.clearAutoPlayTimer()
+      const delay = (this.settings && this.settings.autoPlayDelay) || 500
       this.autoPlayTimer = setTimeout(() => {
         this.autoPlayNext()
-      }, AUTO_PLAY_DELAY)
+      }, delay)
     }
   },
 
@@ -434,8 +457,10 @@ export default {
   },
 
   skipToOptions() {
-    this.closeMenu()
-    if (this._rt) this._rt.skipToNextSelect()
+    this.showConfirmDialog("跳到下一选项", "此操作将失去当前进度，确定继续？", () => {
+      this.closeMenu()
+      if (this._rt) this._rt.skipToNextSelect()
+    })
   },
 
   goToPrevLine(event) {
@@ -458,6 +483,25 @@ export default {
 
     this.clearAutoPlayTimer()
     this._rt.load(scnId, idx).catch(() => {})
+  },
+
+  showConfirmDialog(title, message, action) {
+    this.confirmTitle = title
+    this.confirmMessage = message
+    this.confirmAction = action
+    this.showConfirm = true
+  },
+
+  cancelConfirm() {
+    this.showConfirm = false
+    this.confirmAction = null
+  },
+
+  confirmOk() {
+    this.showConfirm = false
+    const action = this.confirmAction
+    this.confirmAction = null
+    if (action) action()
   },
 
   saveGame() {
@@ -619,6 +663,14 @@ export default {
     const on = this.isAutoPlay || (this.settings && this.settings.keepScreenOn)
     try {
       brightness.setKeepScreenOn({ keepScreenOn: !!on })
+    } catch (e) {}
+    // 低亮度模式：设为 30（Vela 0-255 范围，约合手环 128 档中的 30 档）
+    try {
+      if (this.settings && this.settings.lowBrightness) {
+        brightness.setValue({ value: 30 })
+      } else {
+        brightness.setValue({ value: 128 })
+      }
     } catch (e) {}
   },
 
@@ -1078,5 +1130,67 @@ function normalizeSave(s) {
 .menu-btn-text {
   color: #ffffff;
   font-size: 19px;
+}
+
+.confirm-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.confirm-dialog {
+  width: 280px;
+  background-color: #262626;
+  border-radius: 20px;
+  padding: 24px 20px;
+  align-items: center;
+}
+
+.confirm-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.confirm-message {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 24px;
+}
+
+.confirm-buttons {
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.confirm-btn {
+  flex: 1;
+  height: 44px;
+  margin: 0 6px;
+  border-radius: 22px;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirm-btn-cancel {
+  background-color: #3a3a3a;
+}
+
+.confirm-btn-ok {
+  background-color: #0d6eff;
+}
+
+.confirm-btn-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
 }
 </style>
