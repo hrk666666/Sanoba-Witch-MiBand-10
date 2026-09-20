@@ -315,8 +315,18 @@ export class ScriptRuntime {
           this.lineIndex = idx
           this._step()
         } else {
-          this.lineIndex++
-          this._step()
+          // NEXT 目标在当前场景不存在：
+          // - 若目标名含 gameend / endrecollection 等结束标记 → 游戏结束
+          // - 否则按正常流程走到场景末尾，由 _nextScenario 推进
+          const target = String(content || "").toLowerCase()
+          if (target.includes("gameend") || target.includes("endrecollection")) {
+            this.ended = true
+            this._toast("游戏结束")
+            this._emit()
+          } else {
+            this.lineIndex++
+            this._step()
+          }
         }
         break
       }
@@ -450,7 +460,12 @@ export class ScriptRuntime {
   _nextScenario() {
     const nextId = this._resolveNextScn(this.scnId)
     if (nextId) {
-      this.load(nextId)
+      this.load(nextId).catch(() => {
+        // 下一场景加载失败（如文件名特殊字符）→ 优雅结束，不崩溃
+        this.ended = true
+        this._toast("游戏结束")
+        this._emit()
+      })
     } else {
       this.ended = true
       this._toast("游戏结束")
