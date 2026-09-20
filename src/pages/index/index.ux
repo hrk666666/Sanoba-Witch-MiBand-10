@@ -70,7 +70,6 @@ export default {
     showConfirm: false,
     confirmTitle: "",
     confirmMessage: "",
-    confirmAction: null,
     settings: {
       darkMode: true,
       vibration: true

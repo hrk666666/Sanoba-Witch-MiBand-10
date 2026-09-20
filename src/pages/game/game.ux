@@ -231,7 +231,6 @@ export default {
     showConfirm: false,
     confirmTitle: "",
     confirmMessage: "",
-    confirmAction: null,
     settings: {
       textSpeed: 40,
       textSize: 22,

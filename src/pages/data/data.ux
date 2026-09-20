@@ -85,8 +85,7 @@ export default {
     autoSaveEntry: null,
     showConfirm: false,
     confirmTitle: "",
-    confirmMessage: "",
-    confirmAction: null
+    confirmMessage: ""
   },
 
   onInit() {
