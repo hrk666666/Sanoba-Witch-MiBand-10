@@ -27,13 +27,25 @@ function findScenario(config, scnId) {
 }
 
 // ---------------------------------------------------------------- AIoT
+function trySystemModule(name) {
+  try {
+    return require(name)
+  } catch (e) {
+    // Vela 原生错误对象可能无 message，补全为可读信息
+    const detail = (e && (e.message || e.code || e.msg)) || JSON.stringify(e) || "未知错误"
+    const err = new Error("系统模块加载失败: " + name + " (" + detail + ")")
+    err.module = name
+    throw err
+  }
+}
+
 export function createAiotAdapter(config, resourceManager) {
   // 延迟 require 平台模块（Node 环境不会加载）
-  const file = require("@system.file")
-  const storage = require("@system.storage")
-  const prompt = require("@system.prompt")
-  const vibrator = require("@system.vibrator")
-  const sysAudio = require("@system.audio")
+  const file = trySystemModule("@system.file")
+  const storage = trySystemModule("@system.storage")
+  const prompt = trySystemModule("@system.prompt")
+  const vibrator = trySystemModule("@system.vibrator")
+  const sysAudio = trySystemModule("@system.audio")
 
   // resourceManager 可能由外部注入，也可能在 readConfig 成功后自行创建
   let rm = resourceManager || null
