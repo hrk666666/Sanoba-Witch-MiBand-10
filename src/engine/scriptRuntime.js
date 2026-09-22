@@ -319,7 +319,7 @@ export class ScriptRuntime {
           // - 若目标名含 gameend / endrecollection 等结束标记 → 游戏结束
           // - 否则按正常流程走到场景末尾，由 _nextScenario 推进
           const target = String(content || "").toLowerCase()
-          if (target.includes("gameend") || target.includes("endrecollection")) {
+          if (target.indexOf("gameend") !== -1 || target.indexOf("endrecollection") !== -1) {
             this.ended = true
             this._toast("游戏结束")
             this._emit()
