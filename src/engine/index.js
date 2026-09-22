@@ -58,6 +58,9 @@ export { SaveSystem } from "./saveSystem.js"
 export { ResourceManager } from "./resourceManager.js"
 export { AudioManager } from "./audioManager.js"
 export { FxManager } from "./fxManager.js"
-export { createAiotAdapter, createMemoryAdapter } from "./platformAdapter.js"
+// 注意：不在此处 re-export 适配器。
+//  createAiotAdapter 在 aiotAdapter.js（顶层 import @system.*，仅 Vela 运行时加载）；
+//  createMemoryAdapter 在 platformAdapter.js（Node 测试/PC 预览）。
+//  此处 re-export aiotAdapter 会导致 Node 环境连带加载 @system.* 而失败。
 
 export default { createVnEngine }

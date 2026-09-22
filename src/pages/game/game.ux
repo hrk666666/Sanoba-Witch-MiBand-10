@@ -159,7 +159,7 @@
 <script>
 import { DEBUG, SETTINGS_KEY, AUTO_SAVE_KEY } from "../../common/constants.js"
 import { createVnEngine } from "../../engine/index.js"
-import { createAiotAdapter } from "../../engine/platformAdapter.js"
+import { createAiotAdapter } from "../../engine/aiotAdapter.js"
 import { vibrateShort } from "../../common/vibrate.js"
 
 import storage from "@system.storage"

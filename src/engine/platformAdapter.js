@@ -2,7 +2,7 @@
  * platformAdapter.js — 平台适配层（引擎与平台解耦的关键）
  *
  * 提供两套实现：
- *  - createAiotAdapter()   小米 Vela 快应用（手环 9/10）
+ *  - createAiotAdapter()   小米 Vela 快应用（手环 9/10）→ 见 aiotAdapter.js
  *  - createMemoryAdapter() Node 测试 / PC 预览（内存存储 + mock 音频）
  *
  * 适配器统一暴露：
@@ -14,128 +14,14 @@
  * 换平台 = 新写一个 adapter，引擎零改动。
  */
 
-import { ResourceManager } from "./resourceManager.js"
-
 /** 从内容包配置解析场景：id -> {id, path, listName} */
-function findScenario(config, scnId) {
+export function findScenario(config, scnId) {
   if (!config || !config.scenarios) return null
   for (const listName of Object.keys(config.scenarios)) {
     const item = (config.scenarios[listName] || []).find((s) => s.id === scnId)
     if (item) return { id: item.id, path: item.path, listName }
   }
   return null
-}
-
-// ---------------------------------------------------------------- AIoT
-function trySystemModule(name) {
-  try {
-    return require(name)
-  } catch (e) {
-    // Vela 原生错误对象可能无 message，补全为可读信息
-    const detail = (e && (e.message || e.code || e.msg)) || JSON.stringify(e) || "未知错误"
-    const err = new Error("系统模块加载失败: " + name + " (" + detail + ")")
-    err.module = name
-    throw err
-  }
-}
-
-export function createAiotAdapter(config, resourceManager) {
-  // 延迟 require 平台模块（Node 环境不会加载）
-  const file = trySystemModule("@system.file")
-  const storage = trySystemModule("@system.storage")
-  const prompt = trySystemModule("@system.prompt")
-  const vibrator = trySystemModule("@system.vibrator")
-  const sysAudio = trySystemModule("@system.audio")
-
-  // resourceManager 可能由外部注入，也可能在 readConfig 成功后自行创建
-  let rm = resourceManager || null
-
-  const audio = {
-    _endedCb: null,
-    play(name, { loop = true } = {}) {
-      if (!name || !rm) return
-      sysAudio.src = rm.uri("audio", name)
-      sysAudio.loop = loop
-      sysAudio.autoplay = true
-      sysAudio.play()
-    },
-    pause() { sysAudio.pause() },
-    stop() { sysAudio.stop() },
-    setVolume(v) { sysAudio.volume = v },
-    onEnded(cb) { sysAudio.onended = cb },
-    getState() {
-      return new Promise((resolve) => {
-        sysAudio.getPlayState({ success: resolve, fail: () => resolve(null) })
-      })
-    }
-  }
-
-  return {
-    config,
-    readConfig() {
-      return new Promise((resolve, reject) => {
-        file.readText({
-          uri: "/common/game.txt",
-          success: (data) => {
-            try {
-              const cfg = JSON.parse(data.text)
-              this.config = cfg
-              // readConfig 成功后自行初始化 ResourceManager（外部未注入时）
-              if (!rm) rm = new ResourceManager(cfg.resources)
-              resolve(cfg)
-            } catch (e) {
-              reject(new Error("game.txt 解析失败"))
-            }
-          },
-          fail: (err, code) => reject(new Error("game.txt 读取失败: " + ((err && err.code) || code || "未知")))
-        })
-      })
-    },
-    readScenario(scnId) {
-      return new Promise((resolve, reject) => {
-        const scn = findScenario(this.config, scnId)
-        if (!scn) { reject(new Error("未找到场景: " + scnId)); return }
-        file.readText({
-          uri: `/common/scn/${scn.path}`,
-          success: (data) => {
-            try {
-              resolve(JSON.parse(data.text))
-            } catch (e) {
-              reject(new Error("剧本 JSON 解析失败: " + scnId))
-            }
-          },
-          fail: (err, code) => reject(new Error("剧本读取失败: " + ((err && err.code) || code || "未知")))
-        })
-      })
-    },
-    storageGet(key) {
-      return new Promise((resolve) => {
-        storage.get({
-          key,
-          success: (data) => resolve(data),
-          fail: () => resolve(null)
-        })
-      })
-    },
-    storageSet(key, value) {
-      return new Promise((resolve) => {
-        if (value === "") {
-          storage.delete({ key, success: () => resolve(), fail: () => resolve() })
-          return
-        }
-        storage.set({ key, value, success: () => resolve(), fail: () => resolve() })
-      })
-    },
-    toast(msg) {
-      prompt.showToast({ message: msg, duration: 1500 })
-    },
-    vibrate(mode = "short") {
-      try {
-        vibrator.vibrate({ mode })
-      } catch (e) { /* 部分设备不支持，忽略 */ }
-    },
-    audio
-  }
 }
 
 // ---------------------------------------------------------------- Memory（Node 测试 / PC 预览）
@@ -210,4 +96,4 @@ export function createMemoryAdapter(config, resourceManager, { fs, baseDir } = {
   }
 }
 
-export default { createAiotAdapter, createMemoryAdapter }
+export default { createMemoryAdapter }
