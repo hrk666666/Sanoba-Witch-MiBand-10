@@ -276,25 +276,30 @@ export default {
 
 .card {
   width: 100%;
-  height: 56px;
+  min-height: 56px;
   margin-bottom: 8px;
-  padding: 0 18px;
+  padding: 10px 16px;
   background-color: #262626;
   border-radius: 26px;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .card-label {
-  font-size: 21px;
+  font-size: 19px;
   font-weight: bold;
   color: #ffffff;
+  text-align: center;
+  lines: -1;
 }
 
 .card-value {
-  font-size: 18px;
+  font-size: 17px;
   color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  lines: -1;
+  margin-top: 2px;
 }
 
 .slider {
@@ -308,6 +313,8 @@ export default {
 
 .switch-row {
   margin-bottom: 8px;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .switch-img {

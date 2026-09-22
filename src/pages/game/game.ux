@@ -303,7 +303,7 @@ export default {
     this.startBottomTime()
   },
 
-  async bootEngine() {
+  async bootEngine(retry = true) {
     try {
       const adapter = createAiotAdapter()
       this._engine = await createVnEngine({
@@ -320,8 +320,15 @@ export default {
         this.loadDefault()
       }
     } catch (e) {
+      if (retry) {
+        // 平台 IO 偶发失败：500ms 后自动重试一次
+        setTimeout(() => this.bootEngine(false), 500)
+        return
+      }
       this.isLoading = false
-      this.displayText = "引擎初始化失败: " + (e && e.message)
+      const msg = (e && (e.message || e.code || e.msg)) || (e ? JSON.stringify(e) : "")
+      this.displayText = "引擎初始化失败: " + (msg || "未知错误")
+      if (DEBUG) console.error("[Game] bootEngine error", e)
     }
   },
 
@@ -1143,26 +1150,29 @@ function normalizeSave(s) {
 }
 
 .confirm-dialog {
-  width: 280px;
+  width: 88%;
+  max-width: 300px;
   background-color: #262626;
   border-radius: 20px;
-  padding: 24px 20px;
+  padding: 20px 16px;
   align-items: center;
 }
 
 .confirm-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
   color: #ffffff;
-  margin-bottom: 12px;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 .confirm-message {
-  font-size: 17px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
   text-align: center;
-  margin-bottom: 20px;
-  line-height: 24px;
+  lines: -1;
+  line-height: 22px;
+  margin-bottom: 18px;
 }
 
 .confirm-buttons {
@@ -1173,9 +1183,9 @@ function normalizeSave(s) {
 
 .confirm-btn {
   flex: 1;
-  height: 44px;
-  margin: 0 6px;
-  border-radius: 22px;
+  height: 42px;
+  margin: 0 5px;
+  border-radius: 21px;
   justify-content: center;
   align-items: center;
 }
@@ -1189,7 +1199,7 @@ function normalizeSave(s) {
 }
 
 .confirm-btn-text {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: bold;
   color: #ffffff;
 }

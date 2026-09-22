@@ -268,7 +268,7 @@ export default {
   width: 100%;
   min-height: 64px;
   margin-bottom: 8px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   background-color: #262626;
   border-radius: 20px;
   flex-direction: column;
@@ -307,7 +307,9 @@ export default {
 .card-desc {
   font-size: 16px;
   color: rgba(255, 255, 255, 0.6);
-  lines: 1;
+  lines: 2;
+  text-overflow: ellipsis;
+  line-height: 20px;
   margin-bottom: 2px;
 }
 
@@ -363,26 +365,29 @@ export default {
 }
 
 .confirm-dialog {
-  width: 280px;
+  width: 88%;
+  max-width: 300px;
   background-color: #262626;
   border-radius: 20px;
-  padding: 24px 20px;
+  padding: 20px 16px;
   align-items: center;
 }
 
 .confirm-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
   color: #ffffff;
-  margin-bottom: 12px;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 .confirm-message {
-  font-size: 17px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
   text-align: center;
-  margin-bottom: 20px;
-  line-height: 24px;
+  lines: -1;
+  line-height: 22px;
+  margin-bottom: 18px;
 }
 
 .confirm-buttons {
@@ -393,9 +398,9 @@ export default {
 
 .confirm-btn {
   flex: 1;
-  height: 44px;
-  margin: 0 6px;
-  border-radius: 22px;
+  height: 42px;
+  margin: 0 5px;
+  border-radius: 21px;
   justify-content: center;
   align-items: center;
 }
@@ -409,7 +414,7 @@ export default {
 }
 
 .confirm-btn-text {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: bold;
   color: #ffffff;
 }

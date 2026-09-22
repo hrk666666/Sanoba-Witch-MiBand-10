@@ -75,7 +75,7 @@ export function createAiotAdapter(config, resourceManager) {
               reject(new Error("game.txt 解析失败"))
             }
           },
-          fail: (err) => reject(new Error("game.txt 读取失败: " + (err && err.code)))
+          fail: (err, code) => reject(new Error("game.txt 读取失败: " + ((err && err.code) || code || "未知")))
         })
       })
     },
@@ -92,7 +92,7 @@ export function createAiotAdapter(config, resourceManager) {
               reject(new Error("剧本 JSON 解析失败: " + scnId))
             }
           },
-          fail: (err) => reject(new Error("剧本读取失败: " + (err && err.code)))
+          fail: (err, code) => reject(new Error("剧本读取失败: " + ((err && err.code) || code || "未知")))
         })
       })
     },
