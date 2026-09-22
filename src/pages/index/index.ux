@@ -22,9 +22,6 @@
         <text class="itemtext">载入进度</text>
         <image class="arrow" src="/common/images/enter.png"></image>
       </div>
-        <text class="itemtext">载入进度</text>
-        <image class="arrow" src="/common/images/enter.png"></image>
-      </div>
       <div class="item" @click="routeSetting">
         <text class="itemtext">系统设定</text>
         <image class="arrow" src="/common/images/enter.png"></image>
