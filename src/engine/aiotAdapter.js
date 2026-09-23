@@ -2,13 +2,19 @@
  * aiotAdapter.js — 小米 Vela 快应用（手环 9/10/11）平台适配
  *
  * 与 platformAdapter.js 分离的原因：
- *  Vela 系统模块必须用顶层静态 import（import file from "@system.file"），
- *  打包器才会正确编译为 $app_require$("@app-module/system.file")；
- *  若用运行时 require("@system.file")，webpack 在部分构建环境下会生成
- *  "Cannot find module '@system.file'" 的 fallback，导致真机初始化失败。
+ *  用 Vela 运行时全局 $app_require$ 直接加载系统模块（模块对象本身），
+ *  绕开 webpack 模块解析的两种坑：
+ *   1) 运行时 require("@system.xxx")：部分构建环境（本地 Node v22）生成
+ *      "Cannot find module '@system.file'" fallback → 真机初始化失败；
+ *   2) ESM import xxx from "@system.xxx"：webpack 做 default interop，
+ *      而 Vela 部分系统模块（如 @system.audio）没有 default 导出，
+ *      运行时得到 null → "cannot set property onended of null"。
+ *
+ *  $app_require$("@app-module/system.xxx") 返回模块对象本身
+ *  （与 require 语义一致，已在用户跑通的版本验证）。
  *
  * 本文件仅在 Vela 运行时被引用（src/pages/game/game.ux），
- * Node 测试环境不会 import 它，因此顶层加载 @system.* 安全。
+ * Node 测试环境不会 import 它，因此访问运行时全局安全。
  *
  * 适配器统一暴露：
  *  - readScenario(scnId) -> Promise<Array>   读取剧本（引擎唯一的数据入口）
@@ -20,12 +26,24 @@
 import { ResourceManager } from "./resourceManager.js"
 import { findScenario } from "./platformAdapter.js"
 
-// Vela 系统模块 —— 必须顶层静态 import（勿改为 require）
-import file from "@system.file"
-import storage from "@system.storage"
-import prompt from "@system.prompt"
-import vibrator from "@system.vibrator"
-import sysAudio from "@system.audio"
+/**
+ * Vela 运行时加载系统模块。
+ * 使用框架注入的全局 $app_require$（模块对象直出，无 ESM interop）。
+ * 本文件仅被 Vela 运行时加载，Node 测试环境不会 import 它。
+ */
+function loadSystemModule(id) {
+  if (typeof $app_require$ === "function") {
+    return $app_require$(id)
+  }
+  return null
+}
+
+// Vela 系统模块 —— 模块对象本身（勿改为 ESM default import）
+const file = loadSystemModule("@app-module/system.file")
+const storage = loadSystemModule("@app-module/system.storage")
+const prompt = loadSystemModule("@app-module/system.prompt")
+const vibrator = loadSystemModule("@app-module/system.vibrator")
+const sysAudio = loadSystemModule("@app-module/system.audio")
 
 export function createAiotAdapter(config, resourceManager) {
   // resourceManager 可能由外部注入，也可能在 readConfig 成功后自行创建
@@ -34,18 +52,19 @@ export function createAiotAdapter(config, resourceManager) {
   const audio = {
     _endedCb: null,
     play(name, { loop = true } = {}) {
-      if (!name || !rm) return
+      if (!name || !rm || !sysAudio) return
       sysAudio.src = rm.uri("audio", name)
       sysAudio.loop = loop
       sysAudio.autoplay = true
       sysAudio.play()
     },
-    pause() { sysAudio.pause() },
-    stop() { sysAudio.stop() },
-    setVolume(v) { sysAudio.volume = v },
-    onEnded(cb) { sysAudio.onended = cb },
+    pause() { if (sysAudio) sysAudio.pause() },
+    stop() { if (sysAudio) sysAudio.stop() },
+    setVolume(v) { if (sysAudio) sysAudio.volume = v },
+    onEnded(cb) { if (sysAudio) sysAudio.onended = cb },
     getState() {
       return new Promise((resolve) => {
+        if (!sysAudio) { resolve(null); return }
         sysAudio.getPlayState({ success: resolve, fail: () => resolve(null) })
       })
     }
