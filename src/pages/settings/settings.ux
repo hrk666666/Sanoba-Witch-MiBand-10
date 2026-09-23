@@ -1,6 +1,6 @@
 <template>
   <div class="page" @swipe="handleSwipe">
-    <image class="bg-image" if="false" src=""></image>
+    <image class="bg-image" src="/common/title_bg.jpg"></image>
 
     <!-- 顶部标题 -->
     <div class="header">
@@ -117,7 +117,7 @@ export default {
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
-      darkMode: true,
+      darkMode: false,
       lowBrightness: false,
       vibration: true
     }

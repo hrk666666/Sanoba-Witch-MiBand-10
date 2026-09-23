@@ -10,21 +10,21 @@
     ontouchmove="pageTouchMove"
     ontouchend="pageTouchEnd"
   >
-    <image class="bg-image" if="false" src="{{ '/common/bg/' + currentBg + '.jpg' }}"></image>
+    <image class="bg-image" src="{{ '/common/bg/' + currentBg + '.jpg' }}"></image>
 
     <!-- 立绘三槽位 -->
     <image
-      if="{{ characters.left && !settings.darkMode }}"
+      if="{{ characters.left }}"
       class="sprite sprite-left {{ characters.left.action }}"
       src="{{ '/common/ch/' + characters.left.key + '.png' }}"
     ></image>
     <image
-      if="{{ characters.center && !settings.darkMode }}"
+      if="{{ characters.center }}"
       class="sprite sprite-center {{ characters.center.action }}"
       src="{{ '/common/ch/' + characters.center.key + '.png' }}"
     ></image>
     <image
-      if="{{ characters.right && !settings.darkMode }}"
+      if="{{ characters.right }}"
       class="sprite sprite-right {{ characters.right.action }}"
       src="{{ '/common/ch/' + characters.right.key + '.png' }}"
     ></image>
@@ -32,14 +32,14 @@
     <!-- EV 事件图 -->
     <image
       class="ev-image"
-      if="{{ currentEV && !settings.darkMode }}"
+      if="{{ currentEV }}"
       src="{{ '/common/ev/' + currentEV + '.jpg' }}"
     ></image>
 
     <!-- SD 事件图 -->
     <image
       class="sd-image"
-      if="{{ currentSD && !settings.darkMode }}"
+      if="{{ currentSD }}"
       src="{{ '/common/sd/' + currentSD + '.jpg' }}"
       style="left: {{ sdLeft }}px; top: {{ sdTop }}px"
       ontouchstart="sdTouchStart"
@@ -106,7 +106,6 @@
     <div class="menu-overlay" if="{{ showSwipeMenu }}">
       <image
         class="bg-image"
-        if="false"
         style="opacity: 0.4"
         src="{{ '/common/bg/' + currentBg + '.jpg' }}"
       ></image>
@@ -238,7 +237,7 @@ export default {
       boldText: true,
       autoSave: true,
       keepScreenOn: false,
-      darkMode: true,
+      darkMode: false,
       lowBrightness: false,
       vibration: true
     }

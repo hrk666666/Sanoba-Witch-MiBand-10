@@ -1,6 +1,6 @@
 <template>
   <div class="page" @swipe="swipeBack" @longpress="longPressBack">
-    <image class="bg-image" if="false" src=""></image>
+    <image class="bg-image" src="/common/title_bg.jpg"></image>
 
     <!-- 顶部标题 -->
     <div class="header">
@@ -11,7 +11,7 @@
       <!-- 应用信息卡片 -->
       <div class="card">
         <div class="app-row">
-          <image class="app-icon" if="false" src=""></image>
+          <image class="app-icon" src="/common/logo.png"></image>
           <div class="app-info">
             <text class="app-name">魔女的夜宴</text>
             <text class="app-version">Band 9/10/11 · v{{ appVersion }}</text>
