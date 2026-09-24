@@ -7,16 +7,57 @@
 
 ---
 
-## [1.3.2] - 2026-09-19
+## [1.3.5] - 2026-09-23
+
+### 新增
+
+- **官方穿戴设计风格 UI 全量重构**（band-wearable-ui-kit）：
+  - 首页 / 设置 / 存档 / 关于 / 游戏五页面统一为深灰药丸卡片（`#262626` + 26px 圆角）+ 官方蓝 `#0D6EFF` 强调色；
+  - 引入 29 个系统图标资源；移除 Vela 不支持的 `:active` 伪类；
+  - 游戏页对话框深灰半透明 + 蓝色说话人标签，菜单药丸卡片，选项蓝色按钮。
+- **低亮度模式**（设置页开关，默认关）：开启后屏幕亮度固定为 **30**（Vela 0–255 范围），关闭恢复 128；开启期间保持低亮度状态。
+- **自动播放间隔可调**（设置页滑块）：**500–3000ms** 连续可调，替代原固定 500ms；即时生效，自动播放状态实时刷新。
+- **四类操作确认弹窗**：
+  - 「重开」前确认（提示将覆盖自动存档与当前进度）；
+  - 「读档」时确认（提示将覆盖自动存档与当前进度）；
+  - 「跳到下一选项」前确认（提示将失去当前进度）；
+  - 存档页长按「删除存档」确认。
+- **no-image 无图版分支**：全部图片资源剥离（bg/sd/ev/ch），页面恒纯黑、不渲染图片，包体大幅缩减（5.2MB → 1.8MB），适合存储受限设备。
+- **引擎错误诊断**：初始化/读取失败时输出具体模块名与错误码（替代 undefined），并自动重试一次。
 
 ### 修复
 
-- **BGM/SE 不播放**：`createAiotAdapter` 的 `resourceManager` 闭包变量在 game.ux 调用时未注入（始终为 `undefined`），导致 `audio.play()` 首行 `!resourceManager` 直接 return，剧本节点 8（音乐）发出的播放请求全部静默丢弃。改为 `readConfig` 成功后自动初始化 `ResourceManager`，音频 URI 解析恢复正常。
-- **game.ux 重复属性**：`private` 块中 `isSkipping` 声明两次（引擎状态区与 UI 状态区各一份），后者覆盖前者，删除冗余声明。
+- **真机引擎初始化失败（Cannot find module '@system.file'）**：Vela 系统模块统一改用运行时 `$app_require$` 直接加载模块对象，根治 webpack 对 `require('@system.*')` 生成 fallback 导致的启动即报错。
+- **音频模块加载失败（cannot set property onended of null）**：`@system.audio` 改为模块对象直取，规避 ESM default interop 取到 null 的问题；音频不可用时静默降级为无声，游戏正常运行。
+- **ending 章节「エンディング」读取失败**：各角色线 ending 场景末尾 NEXT 指向不存在标签时正确结束游戏（识别 `gameend` / `endrecollection` 标记），场景加载失败优雅降级，不再报「文件读失败 undefined」。
+- **剧情背景图不显示（全黑）**：恢复 main 分支背景图渲染（背景 108 张 + SD 293 张正常显示）；设置/首页/关于页背景与图标恢复。
+- **窄屏适配（192px 设计宽度）**：确认弹窗宽度改为 **88% + max-width 300px**；弹窗标题/正文居中、自动换行；设置页数值卡片纵向居中布局；首页卡片文字可换行；存档预览两行显示。
+- **快进与自动播放交互**：快进遇选项自动停止；SE 打断 BGM 后自动恢复；上一句回退重置自动播放计时。
 
 ### 其他
 
-- **测试脚本**：`run-tests.mjs` 的引擎文件复制逻辑增加 import 路径修正（`./xxx.js` → `./xxx.mjs`），与 `regression-real.mjs` 对齐，避免新增跨模块 import 后测试报 `MODULE_NOT_FOUND`。
+- 版本号 `versionCode 10 → 12`，`versionName 1.3.2 → 1.3.5`（main 有图版 / no-image 无图版 code 13，同版本号）。
+- 双版本并行维护：`main`（有图版）与 `no-image`（无图版）分别构建交付。
+
+---
+
+## [1.3.2] - 2026-09-19
+
+### 新增
+
+- **VN 引擎化重构**：
+  - 平台无关引擎核心：`src/engine/` 7 模块（变量 / 剧本运行时 / 存档 / 资源 / 音频 / 特效 / 平台适配），引擎与平台解耦；
+  - 内容包解耦：`src/common/game.txt` 内容包（101 场景清单 + 分线 + 初始变量），剧本格式升级 v1.1（新增立绘三槽位 / 音乐 / 特效 / 变量指令）；
+  - 游戏页接入新引擎：立绘三槽位、BGM/SE、特效层、打字机、多槽存档、上一句、时间显示。
+
+### 修复
+
+- **BGM/SE 不播放**：`createAiotAdapter` 的 `resourceManager` 闭包未注入导致 `audio.play()` 静默丢弃全部音乐请求；改为 `readConfig` 成功后自动初始化 `ResourceManager`，音频 URI 解析恢复正常。
+- **game.ux 重复属性声明**：`private` 块中 `isSkipping` 声明两次，删除冗余。
+
+### 其他
+
+- 测试脚本 import 路径修正（`.js → .mjs`），引擎 17/17 单测 + 真实内容包回归通过。
 - 版本号 `versionCode 9 → 10`，`versionName 1.3.0 → 1.3.2`。
 
 ---
@@ -65,11 +106,7 @@
 - **版本号**：`versionName 1.2.1 → 1.3.0`，`versionCode 7 → 8`（package.json 同步 1.3.0）。
 - **manifest**：新增 `system.brightness`、`system.vibrator` 能力声明。
 - **签名**：新增 `sign/` 证书（RSA-2048，有效期 10 年，CN=SanobaWitch），`aiot release` 生产包使用该固定签名；`.gitignore` 不再忽略 `sign/`，签名入库供 GitHub Actions 复用，保证后续版本签名一致、可覆盖安装。
-- **CI**：新增 GitHub Actions workflow（`.github/workflows/build.yml`），推送 `main` 后自动 `npm ci && npm run release`，RPK 产物以 workflow artifact 形式提供（不创建 GitHub Release）。
-
-### 注意
-
-- 本版本 RPK 使用**全新签名证书**，与 1.2.1 本地构建的签名不同。若覆盖安装旧版时提示签名冲突，需先卸载旧版再安装（存档会随卸载清除，建议先备份）。
+- **CI**：新增 GitHub Actions workflow（`.github/workflows/build.yml`），推送 `main` 后自动 `npm ci && npm run release`，RPK 产物以 workflow artifact 形式提供。
 
 ---
 
