@@ -333,10 +333,16 @@ export default {
 
   loadDefault() {
     this.isLoading = true
-    this._rt.load("001").catch((e) => {
-      this.isLoading = false
-      this.displayText = "加载失败: " + (e && e.message)
-    })
+    this._rt.load("001")
+      .then(() => {
+        this.isLoading = false
+        // 与读档相同：平台 IO 偶发失败，新游戏首屏也重刷一次背景
+        this.refreshBackground()
+      })
+      .catch((e) => {
+        this.isLoading = false
+        this.displayText = "加载失败: " + (e && e.message)
+      })
   },
 
   syncState(s) {

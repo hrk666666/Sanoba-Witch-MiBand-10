@@ -111,6 +111,9 @@ export class ScriptRuntime {
       this.isTextComplete = false
       this.options = []
       this.showOptions = false
+      // 跨场景：CG（事件图）属于原场景，不残留到新场景；需要时场景剧本会重新声明
+      this.ev = ""
+      this.sd = ""
     }
     this._emit()
     this._step()
