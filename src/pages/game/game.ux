@@ -541,10 +541,22 @@ export default {
       await this._rt.restore(data)
       this.isLoading = false
       this.maybeAutoSave()
+      // 平台 IO 偶发失败（引擎启动已有重试，图片加载没有）：
+      // 恢复后强制重刷一次背景，避免偶发"只有立绘没有背景"
+      this.refreshBackground()
     } catch (e) {
       this.isLoading = false
       this.displayText = "读档失败: " + (e && e.message)
     }
+  },
+
+  refreshBackground() {
+    const bg = this.currentBg
+    if (!bg) return
+    this.currentBg = ""
+    setTimeout(() => {
+      this.currentBg = bg
+    }, 80)
   },
 
   maybeAutoSave() {

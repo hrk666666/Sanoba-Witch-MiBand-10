@@ -396,8 +396,15 @@ export class ScriptRuntime {
     // 与旧版 updateEV 行为一致：
     //  null → 清空；sd* → 立绘差分图；ev* → 事件CG；其余（item_* 道具等）忽略
     if (name === null) { this.sd = this.ev = ""; return }
-    if (name.startsWith("sd")) this.sd = name
-    else if (name.startsWith("ev")) this.ev = name
+    if (name.startsWith("sd")) {
+      this.sd = name
+      // CG 为全屏事件图，显示时立绘应隐藏
+      this.characters = { left: null, center: null, right: null }
+    } else if (name.startsWith("ev")) {
+      this.ev = name
+      // CG 为全屏事件图，显示时立绘应隐藏
+      this.characters = { left: null, center: null, right: null }
+    }
   }
 
   /** 立绘列表批量应用（对话节点第4字段） */
