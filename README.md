@@ -25,7 +25,7 @@ npm run validate            # 内容包完整性校验（game.txt / 112 块剧�
 
 ```
 src/
-├── manifest.json           # 包名 com.hrk.qlwh.band，名称 千恋＊万花，deviceTypeList=["watch"]
+├── manifest.json           # 包名 com.hrk.qlwh.bandp（pro 分支）/ com.hrk.qlwh.band（main），名称 千恋＊万花，deviceTypeList=["watch"]
 ├── app.ux                  # 应用入口
 ├── common/
 │   ├── game.txt            # 引擎配置：id=senren-banka、title=千恋＊万花、scenarios.main=112 块

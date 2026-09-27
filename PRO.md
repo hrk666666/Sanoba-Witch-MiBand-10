@@ -28,7 +28,7 @@
 ## 注意
 
 - 小米官方 Vela 支持列表中**未包含小米手环 8 Pro**（媒体查询等特性标注为不支持），8 Pro 能否安装 RPK 需要实机验证；10 Pro / 9 Pro 为官方支持设备。
-- 包名与 main 分支一致（`com.hrk.qlwh.band`），同一签名，Pro 分支产物可直接覆盖安装。
+- 包名为 `com.hrk.qlwh.bandp`（与 main 分支的 `com.hrk.qlwh.band` 区分，可与标准版同时安装），同一签名。
 
 ## 构建
 
