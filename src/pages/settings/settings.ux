@@ -368,4 +368,47 @@ export default {
   color: #ffffff;
   text-align: left;
 }
+
+/* 方形屏（手环 10 Pro / 9 Pro / 8 Pro，336x480） */
+@media (shape: rect) {
+  .header {
+    top: 13px;
+    height: 28px;
+  }
+  .header-title {
+    font-size: 16px;
+  }
+  .list {
+    top: 48px;
+    bottom: 100px;
+  }
+  .item {
+    min-height: 35px;
+    margin-bottom: 5px;
+    padding: 6px 10px;
+    border-radius: 16px;
+  }
+  .item-title {
+    font-size: 12px;
+  }
+  .item-desc {
+    font-size: 11px;
+  }
+  .bottom-bar {
+    bottom: 82px;
+  }
+  .reset-btn {
+    height: 30px;
+    border-radius: 15px;
+  }
+  .reset-btn-text {
+    font-size: 13px;
+  }
+  .preview-panel {
+    bottom: 10px;
+    height: 60px;
+    border-radius: 13px;
+    padding: 8px;
+  }
+}
 </style>
