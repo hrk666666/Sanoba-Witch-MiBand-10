@@ -1227,4 +1227,95 @@ function normalizeSave(s) {
   font-weight: bold;
   color: #ffffff;
 }
+
+/* 方形屏（手环 10 Pro / 9 Pro / 8 Pro，336x480）：等比缩放因子 1.585 且屏高 480，按 0.923 高度比压缩回等效物理尺寸 */
+@media (shape: rect) {
+  .dialogue-layer {
+    padding: 5px;
+  }
+  .speaker-box {
+    bottom: 110px;
+    padding: 4px 9px;
+    border-radius: 10px;
+  }
+  .speaker-text {
+    font-size: 11px;
+  }
+  .prev-line-btn {
+    padding: 3px 9px;
+    border-radius: 8px;
+  }
+  .prev-line-text {
+    font-size: 9px;
+  }
+  .dialogue-box {
+    bottom: 12px;
+    height: 87px;
+    border-radius: 13px;
+  }
+  .scroll-view {
+    padding: 9px;
+  }
+  .bottom-time {
+    font-size: 9px;
+  }
+  .options-overlay {
+    padding: 8px;
+  }
+  .option-btn {
+    padding: 10px;
+    margin: 4px 0;
+    border-radius: 15px;
+  }
+  .option-text {
+    font-size: 13px;
+  }
+  .control-btn {
+    padding: 5px 11px;
+    border-radius: 10px;
+  }
+  .control-btn-text {
+    font-size: 10px;
+  }
+  .menu-container {
+    padding: 10px;
+    border-radius: 15px;
+  }
+  .menu-time {
+    font-size: 10px;
+  }
+  .menu-title {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .menu-btn {
+    height: 33px;
+    margin-bottom: 5px;
+    border-radius: 15px;
+  }
+  .menu-btn-text {
+    font-size: 12px;
+  }
+  .confirm-dialog {
+    padding: 13px 10px;
+    border-radius: 13px;
+  }
+  .confirm-title {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .confirm-message {
+    font-size: 10px;
+    line-height: 14px;
+    margin-bottom: 12px;
+  }
+  .confirm-btn {
+    height: 26px;
+    margin: 0 3px;
+    border-radius: 13px;
+  }
+  .confirm-btn-text {
+    font-size: 11px;
+  }
+}
 </style>

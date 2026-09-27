@@ -171,4 +171,46 @@ export default {
   width: 24px;
   height: 24px;
 }
+
+/* 方形屏（手环 10 Pro / 9 Pro / 8 Pro，336x480） */
+@media (shape: rect) {
+  .header {
+    top: 13px;
+    height: 28px;
+  }
+  .header-title {
+    font-size: 16px;
+  }
+  .list {
+    top: 48px;
+    bottom: 10px;
+  }
+  .card {
+    padding: 9px 11px;
+    border-radius: 13px;
+  }
+  .app-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    margin-right: 9px;
+  }
+  .app-name {
+    font-size: 14px;
+  }
+  .app-version {
+    font-size: 10px;
+  }
+  .info-label {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .info-value {
+    font-size: 12px;
+  }
+  .arrow {
+    width: 15px;
+    height: 15px;
+  }
+}
 </style>

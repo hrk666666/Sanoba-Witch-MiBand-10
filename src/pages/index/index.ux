@@ -346,4 +346,53 @@ export default {
   font-weight: bold;
   color: #ffffff;
 }
+
+/* 方形屏（手环 10 Pro / 9 Pro / 8 Pro，336x480）：等比缩放因子 1.585，压缩回等效物理尺寸 */
+@media (shape: rect) {
+  .header {
+    top: 13px;
+    height: 28px;
+  }
+  .header-title {
+    font-size: 16px;
+  }
+  .list {
+    top: 50px;
+    bottom: 10px;
+  }
+  .item {
+    height: 35px;
+    margin-bottom: 5px;
+    padding: 0 11px;
+    border-radius: 16px;
+  }
+  .itemtext {
+    font-size: 14px;
+  }
+  .arrow {
+    width: 15px;
+    height: 15px;
+  }
+  .confirm-dialog {
+    padding: 13px 10px;
+    border-radius: 13px;
+  }
+  .confirm-title {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .confirm-message {
+    font-size: 10px;
+    line-height: 14px;
+    margin-bottom: 12px;
+  }
+  .confirm-btn {
+    height: 26px;
+    margin: 0 3px;
+    border-radius: 13px;
+  }
+  .confirm-btn-text {
+    font-size: 11px;
+  }
+}
 </style>
