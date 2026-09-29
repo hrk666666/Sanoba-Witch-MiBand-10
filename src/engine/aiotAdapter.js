@@ -33,7 +33,13 @@ import { findScenario } from "./platformAdapter.js"
  */
 function loadSystemModule(id) {
   if (typeof $app_require$ === "function") {
-    return $app_require$(id)
+    try {
+      return $app_require$(id)
+    } catch (e) {
+      // 设备固件不支持该 feature（如 Band 9 无 system.audio）时安全降级
+      if (typeof DEBUG !== "undefined" && DEBUG) console.error("[aiotAdapter] load module failed", id, e && e.message)
+      return null
+    }
   }
   return null
 }
