@@ -1168,6 +1168,7 @@ function normalizeSave(s) {
 }
 
 .confirm-dialog {
+  flex-direction: column;
   width: 88%;
   max-width: 300px;
   background-color: #262626;
