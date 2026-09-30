@@ -254,9 +254,7 @@ export default {
     if (this._fxTimer) clearTimeout(this._fxTimer)
     if (this._rt) this._rt.destroy()
 
-    try {
-      brightness.setKeepScreenOn({ keepScreenOn: false })
-    } catch (e) {}
+    this.restoreBrightness()
   },
 
   onHide() {
@@ -266,6 +264,7 @@ export default {
     this.clearPageLongTimer()
     this.clearFFLongPressTimer()
     this.stopBottomTime()
+    this.restoreBrightness()
   },
 
   onInit() {
@@ -298,8 +297,40 @@ export default {
       this.loadDefault()
     }
 
+    this.captureOriginalBrightness()
     this.applyKeepScreenOn()
     this.startBottomTime()
+  },
+
+  // 记录用户进入游戏前的系统亮度（仅在未被本应用改动前记录一次）
+  captureOriginalBrightness() {
+    if (this._origBrightness !== undefined) return
+    try {
+      brightness.getValue({
+        success: (d) => {
+          if (this._origBrightness === undefined && !(this.settings && this.settings.lowBrightness)) {
+            this._origBrightness = d.value
+          }
+        }
+      })
+    } catch (e) {}
+  },
+
+  // 离开游戏 / 页面销毁：关闭常亮，并恢复进入前的系统亮度
+  restoreBrightness() {
+    try {
+      brightness.setKeepScreenOn({ keepScreenOn: false })
+    } catch (e) {}
+    if (this._lowBrightnessApplied) {
+      try {
+        if (this._origBrightness !== undefined) {
+          brightness.setValue({ value: this._origBrightness })
+        } else {
+          brightness.setValue({ value: 128 })
+        }
+      } catch (e) {}
+      this._lowBrightnessApplied = false
+    }
   },
 
   async bootEngine(retry = true) {
@@ -695,12 +726,20 @@ export default {
     try {
       brightness.setKeepScreenOn({ keepScreenOn: !!on })
     } catch (e) {}
-    // 低亮度模式：设为 30（Vela 0-255 范围，约合手环 128 档中的 30 档）
+    // 仅低亮度模式调整亮度；普通模式保持系统当前亮度，不再强制拉高
+    const low = !!(this.settings && this.settings.lowBrightness)
     try {
-      if (this.settings && this.settings.lowBrightness) {
+      if (low) {
         brightness.setValue({ value: 30 })
-      } else {
-        brightness.setValue({ value: 128 })
+        this._lowBrightnessApplied = true
+      } else if (this._lowBrightnessApplied) {
+        // 关闭低亮度：恢复进入游戏前的亮度
+        if (this._origBrightness !== undefined) {
+          brightness.setValue({ value: this._origBrightness })
+        } else {
+          brightness.setValue({ value: 128 })
+        }
+        this._lowBrightnessApplied = false
       }
     } catch (e) {}
   },
@@ -1183,6 +1222,7 @@ function normalizeSave(s) {
 }
 
 .confirm-title {
+  width: 100%;
   font-size: 20px;
   font-weight: bold;
   color: #ffffff;
@@ -1191,6 +1231,7 @@ function normalizeSave(s) {
 }
 
 .confirm-message {
+  width: 100%;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
