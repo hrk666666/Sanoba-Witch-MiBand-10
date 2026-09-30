@@ -192,6 +192,7 @@ export default {
     _engine: null,
     _rt: null,
     _pendingRestore: null,
+    savedBrightness: null,
 
     displayText: "",
     currentCharIndex: 0,
@@ -256,6 +257,7 @@ export default {
     try {
       brightness.setKeepScreenOn({ keepScreenOn: false })
     } catch (e) {}
+    this.restoreBrightness()
   },
 
   onHide() {
@@ -265,6 +267,7 @@ export default {
     this.clearPageLongTimer()
     this.clearFFLongPressTimer()
     this.stopBottomTime()
+    this.restoreBrightness()
   },
 
   onInit() {
@@ -669,12 +672,29 @@ export default {
     try {
       brightness.setKeepScreenOn({ keepScreenOn: !!on })
     } catch (e) {}
-    // 低亮度模式：设为 30（Vela 0-255 范围，约合手环 128 档中的 30 档）
+    // 低亮度模式：开启时记住原亮度并设为 30；关闭时恢复原亮度。
+    // 不再在关闭时强制 128（否则进游戏会把系统亮度拉高，刺眼）。
     try {
       if (this.settings && this.settings.lowBrightness) {
+        if (this.savedBrightness == null) {
+          brightness.getValue({
+            success: (d) => { this.savedBrightness = d.value },
+            fail: () => { this.savedBrightness = null }
+          })
+        }
         brightness.setValue({ value: 30 })
-      } else {
-        brightness.setValue({ value: 128 })
+      } else if (this.savedBrightness != null) {
+        brightness.setValue({ value: this.savedBrightness })
+        this.savedBrightness = null
+      }
+    } catch (e) {}
+  },
+
+  restoreBrightness() {
+    try {
+      if (this.savedBrightness != null) {
+        brightness.setValue({ value: this.savedBrightness })
+        this.savedBrightness = null
       }
     } catch (e) {}
   },
@@ -1165,6 +1185,7 @@ function normalizeSave(s) {
 }
 
 .confirm-message {
+  width: 100%;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.75);
   text-align: center;
