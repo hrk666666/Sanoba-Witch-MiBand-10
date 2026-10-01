@@ -28,6 +28,21 @@ export const SCN_TYPE = {
 
 export const CH_SLOTS = ["left", "center", "right"]
 
+/** 真结局节点目标 → 通关标记线名（*gameend_END / *gameend_end 等哨兵不计入） */
+const END_LINE_NAMES = {
+  "gameend_yoshinoend": "芳乃",
+  "gameend_makoend": "茉子",
+  "gameend_murasameend": "丛雨",
+  "gameend_renaend": "蕾娜",
+  "gameend_koharuend": "小春",
+  "gameend_rokaend": "芦花"
+}
+
+/** 隐藏线入口选项跳转目标：首周目（未通关）置灰，通关任意 1 条主线后可选 */
+const HIDDEN_OPTION_JUMPS = {
+  "*p8424": true  // 共通线 8418 页"还是别说多余的话比较好"→ 小春/芦花线
+}
+
 /** 存量 KRKR 立绘位置 → 标准槽位 */
 const LEGACY_SLOT_MAP = {
   "出": "center", "中": "center", "顔": "center", "立": "center",
@@ -76,6 +91,9 @@ export class ScriptRuntime {
     // 展示状态
     this.speaker = ""
     this.fullText = ""
+
+    // 通关标记（各线真结局通关记录，用于隐藏线解锁 / 后日谈入口）
+    this.clears = []
     this.isTextComplete = false
     this.bg = ""
     this.sd = ""
@@ -207,10 +225,7 @@ export class ScriptRuntime {
           // 目标不存在：含 gameend / endrecollection → 游戏结束（快进到结局即结束）
           const target = rawTarget.toLowerCase()
           if (target.indexOf("gameend") !== -1 || target.indexOf("endrecollection") !== -1) {
-            this.ended = true
-            this._toast("游戏结束")
-            this.isSkipping = false
-            this._emit()
+            this._finishGame(rawTarget)
             return
           }
           // 其余：顺序推进（与 _step 一致）
@@ -244,6 +259,7 @@ export class ScriptRuntime {
   choose(optionIndex) {
     const opt = this.options[optionIndex]
     if (!opt) return
+    if (opt.enabled === false) return  // 置灰选项不可选（隐藏线首周目锁定）
     this.showOptions = false
     if (opt.exp) this.vars.run(opt.exp)
     this._emit()
@@ -377,9 +393,7 @@ export class ScriptRuntime {
           // - 否则按正常流程走到场景末尾，由 _nextScenario 推进
           const target = rawTarget.toLowerCase()
           if (target.indexOf("gameend") !== -1 || target.indexOf("endrecollection") !== -1) {
-            this.ended = true
-            this._toast("游戏结束")
-            this._emit()
+            this._finishGame(rawTarget)
           } else {
             this.lineIndex++
             this._step()
@@ -485,9 +499,10 @@ export class ScriptRuntime {
     this.characters[pos] = { key, action: "change" }
   }
 
-  /** 选项过滤：仅保留条件为真的选项 */
+  /** 选项过滤：条件过滤 + 隐藏线入口首周目置灰 */
   _filterOptions(raw) {
     if (!Array.isArray(raw)) return []
+    const unlocked = this.clears && this.clears.length > 0
     return raw
       .filter((opt) => {
         if (!Array.isArray(opt)) return false
@@ -495,7 +510,40 @@ export class ScriptRuntime {
         if (cond === undefined || cond === null || cond === "") return true
         return Boolean(this.vars.evalCondition(cond))
       })
-      .map((opt) => ({ text: opt[0], jump: opt[1], exp: opt[2] || "" }))
+      .map((opt) => {
+        const jump = opt[1]
+        // 隐藏线入口选项：未通关任意主线时置灰（仍显示但不可选）
+        const locked = HIDDEN_OPTION_JUMPS[jump] === true && !unlocked
+        return { text: opt[0], jump, exp: opt[2] || "", enabled: !locked }
+      })
+  }
+
+  /** 设置已通关线（启动时从存储读取后注入） */
+  setClears(arr) {
+    this.clears = Array.isArray(arr) ? arr.filter(Boolean) : []
+  }
+
+  /** 通关标记：更新内存 + 异步写入存储（供主菜单后日谈/隐藏线解锁读取） */
+  _recordClear(name) {
+    if (!name || this.clears.includes(name)) return
+    this.clears.push(name)
+    if (this.adapter && typeof this.adapter.storageSet === "function") {
+      this.adapter.storageSet("qlwh_clears", JSON.stringify(this.clears)).catch(() => {})
+    }
+  }
+
+  /** 统一结局处理：标记结束、记录通关线（真结局）、toast、通知 UI */
+  _finishGame(rawTarget) {
+    this.ended = true
+    this._toast("游戏结束")
+    const t = String(rawTarget || "").toLowerCase()
+    for (const key in END_LINE_NAMES) {
+      if (t.indexOf(key) !== -1) {
+        this._recordClear(END_LINE_NAMES[key])
+        break
+      }
+    }
+    this._emit()
   }
 
   /** 跨场景跳转（选项指向其他场景的标签） */
