@@ -92,6 +92,61 @@ async function walkRoute(choicePolicy, label, defaultPick = () => 0) {
   return { state, steps, visited, optionsSeen }
 }
 
+// ---- 路线 3：快进（跳到下一个选项）不串线 ----
+// 回归背景：skipToNextSelect 曾跳过 [6] 跳转/结束节点，
+// 快进跳过 gameend 后线路不结束、顺序连播下一条线（"芳乃完接茉子"）。
+// 修复：快进遇 gameend 立即结束、遇路由节点执行跳转。
+async function walkRouteWithSkips(choicePolicy, label, skipEvery = 500) {
+  let state = null
+  const engine = await createVnEngine({
+    adapter,
+    options: { saveSlots: 4 },
+    onState: (s) => { state = s }
+  })
+  const rt = engine.runtime
+  await rt.load("001")
+  let steps = 0
+  const visited = new Set()
+  const perScnCount = {}
+  while (!state.ended && steps < 800000) {
+    steps++
+    visited.add(state.scnId)
+    if (state.showOptions) {
+      const opts = state.options || []
+      if (opts.length === 0) { rt.advance(); continue }
+      perScnCount[state.scnId] = (perScnCount[state.scnId] || 0)
+      const n = perScnCount[state.scnId]++
+      let idx = 0
+      if (choicePolicy && choicePolicy[state.scnId]) {
+        const want = choicePolicy[state.scnId][n]
+        if (want !== undefined) idx = Math.min(want, opts.length - 1)
+      }
+      rt.choose(idx)
+    } else if (state.isTextComplete) {
+      // 模拟用户周期性使用"跳到下一个选项"
+      if (steps % skipEvery === 0 && !state.ended) {
+        rt.skipToNextSelect()
+      } else {
+        rt.advance()
+      }
+    } else {
+      rt.markTextComplete()
+    }
+    await Promise.resolve()
+  }
+  return { state, steps, visited }
+}
+
+console.log(`\n== 路线 3（快进跳选项，防串线回归）==`)
+const r3 = await walkRouteWithSkips({ "012": [1, 0, 0], "017": [0] }, "芳乃+快进")
+check("芳乃线+快进：正确结束于 037（不串线下一条线）",
+  r3.state.ended && r3.state.scnId === "037",
+  `实际 ${r3.state.scnId} steps=${r3.steps} 访问 ${r3.visited.size} 块`)
+check("芳乃线+快进：未进入茉子线（038 块）", !r3.visited.has("038"))
+const r4 = await walkRouteWithSkips(null, "全选1+快进", 300)
+check("全选1+快进：正确结束于 019", r4.state.ended && r4.state.scnId === "019",
+  `实际 ${r4.state.scnId}`)
+
 // ---- 路线 1：全选第 1 项 ----
 console.log(`\n== 路线 1（全选第 1 项）==`)
 const r1 = await walkRoute(null, "路线1")

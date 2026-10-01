@@ -177,6 +177,46 @@ export class ScriptRuntime {
           this._emit()
           return
         }
+        case SCN_TYPE.NEXT: {
+          // 快进遇跳转/结束节点必须执行，不能跳过：
+          // 跳过 gameend 会导致线路不结束、顺序连播下一条线（"芳乃完接茉子"根因）。
+          const rawTarget = String(node[1] || "")
+          const cond = node[2]
+          // 条件跳转：条件为假 → 落到下一行继续
+          if (cond !== undefined && cond !== null && cond !== "" &&
+              !this.vars.evalCondition(String(cond))) {
+            this.lineIndex++
+            continue
+          }
+          // 跨场景跳转：退出快进，交给异步加载新场景
+          if (rawTarget.indexOf("@") !== -1) {
+            this.isSkipping = false
+            this.lineIndex = this.scriptData.length
+            this._jumpToScenarioLabel(rawTarget)
+            this._emit()
+            return
+          }
+          // 本场景标签存在 → 跳到该标签继续快进
+          const idx = this.scriptData.findIndex(
+            (n) => n[0] === SCN_TYPE.LABEL && n[1] === node[1]
+          )
+          if (idx !== -1) {
+            this.lineIndex = idx
+            continue
+          }
+          // 目标不存在：含 gameend / endrecollection → 游戏结束（快进到结局即结束）
+          const target = rawTarget.toLowerCase()
+          if (target.indexOf("gameend") !== -1 || target.indexOf("endrecollection") !== -1) {
+            this.ended = true
+            this._toast("游戏结束")
+            this.isSkipping = false
+            this._emit()
+            return
+          }
+          // 其余：顺序推进（与 _step 一致）
+          this.lineIndex++
+          continue
+        }
         case SCN_TYPE.DIALOGUE:
           lastDialogue = node
           break
