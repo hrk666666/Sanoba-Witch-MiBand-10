@@ -47,7 +47,7 @@
         <scroll scroll-y="true" class="after-list">
           <div
             class="after-item {{ clears.indexOf(item.name) !== -1 ? '' : 'after-item-locked' }}"
-            for="{{item in afterStoryList}}"
+            for="{{ (index, item) in afterStoryList }}"
             @click="startAfterStory(item.name)"
           >
             <text class="after-item-text">{{ item.name }}线</text>
