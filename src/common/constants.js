@@ -2,6 +2,18 @@ export const DEBUG = false
 export const SETTINGS_KEY = "settings"
 export const SAVE_KEY = "user_save_data"
 export const AUTO_SAVE_KEY = "auto_save_data"
+export const CLEARS_KEY = "qlwh_clears"
+
+// 各线后日谈章节：结局（gameend）后 → 该线"回到主页"哨兵前
+// scn = 起始场景块，from = 块内节点数组起始行（结局行的下一行）
+export const AFTER_STORIES = [
+  { name: "芳乃", scn: "037", from: 553 },
+  { name: "茉子", scn: "056", from: 57 },
+  { name: "丛雨", scn: "077", from: 498 },
+  { name: "蕾娜", scn: "097", from: 321 },
+  { name: "小春", scn: "107", from: 728 },
+  { name: "芦花", scn: "111", from: 789 }
+]
 
 // 使用.json格式的文本似乎在实体机上读取不到剧本（就算模拟器读的到），故此处使用txt存储
 // 场景列表由内容包 src/common/game.txt 驱动（引擎 data-driven），不再在此维护。

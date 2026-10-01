@@ -47,7 +47,7 @@ function check(name, cond, extra = "") {
   }
 }
 
-async function walkRoute(choicePolicy, label, defaultPick = () => 0) {
+async function walkRoute(choicePolicy, label, defaultPick = () => 0, initClears = null) {
   let state = null
   const engine = await createVnEngine({
     adapter,
@@ -55,6 +55,7 @@ async function walkRoute(choicePolicy, label, defaultPick = () => 0) {
     onState: (s) => { state = s }
   })
   const rt = engine.runtime
+  if (initClears) rt.setClears(initClears)
   await rt.load("001")
   let steps = 0
   const visited = new Set()
@@ -77,6 +78,11 @@ async function walkRoute(choicePolicy, label, defaultPick = () => 0) {
         if (choicePolicy && choicePolicy[state.scnId]) {
           const want = choicePolicy[state.scnId][n]
           if (want !== undefined) idx = Math.min(want, opts.length - 1)
+        }
+        // 置灰选项不可选：模拟 UI 层，回退到可用项（首周目隐藏线锁定）
+        if (opts[idx] && opts[idx].enabled === false) {
+          const alt = opts.findIndex((o) => o.enabled !== false)
+          if (alt !== -1) idx = alt
         }
         rt.choose(idx)
       }
@@ -155,9 +161,9 @@ check("路线 1 到达结局（ended）", r1.state.ended,
 check("路线 1 未访问丛雨线（057 块）", !r1.visited.has("057"))
 console.log(`  路线 1 推进 ${r1.steps} 步，访问 ${r1.visited.size} 个场景块，最终 ${r1.state.scnId}，选项 ${r1.optionsSeen.length} 次`)
 
-// ---- 路线 2：全选最后一项 ----
-console.log(`\n== 路线 2（全选最后一项）==`)
-const r2 = await walkRoute(null, "路线2", (n) => n - 1)
+// ---- 路线 2：全选最后一项（二周目场景：预置通关标记，解锁隐藏线选项） ----
+console.log(`\n== 路线 2（全选最后一项，通关后）==`)
+const r2 = await walkRoute(null, "路线2", (n) => n - 1, ["芳乃"])
 check("路线 2 到达结局（ended）", r2.state.ended,
   `steps=${r2.steps} scnId=${r2.state.scnId}`)
 check("路线 2 访问丛雨线（057 块）", r2.visited.has("057"))
@@ -180,11 +186,129 @@ const ROUTE_SWEEP = [
 ]
 console.log(`\n== 路线扫描（${ROUTE_SWEEP.length} 条）==`)
 for (const r of ROUTE_SWEEP) {
-  const res = await walkRoute(r.policy, r.name)
+  // 小春&芦花为隐藏线：预置通关标记（二周目解锁）
+  const initClears = r.name === "小春&芦花线" ? ["芳乃"] : null
+  const res = await walkRoute(r.policy, r.name, () => 0, initClears)
   const ok = res.state.ended && res.state.scnId === r.expectEnd
   check(`${r.name} → 结局（最终块 ${r.expectEnd}）`, ok,
     `实际 ${res.state.scnId} steps=${res.steps} visited=${res.visited.size}`)
   console.log(`  ${r.name}: ${res.steps} 步，访问 ${res.visited.size} 块，最终 ${res.state.scnId}`)
+}
+
+// ---- 二周目机制：通关标记 / 隐藏线解锁 / 后日谈 ----
+console.log(`\n== 二周目机制 ==`)
+
+// 1. 首周目：隐藏线入口选项（8418 页"不说多余话"→*p8424）置灰
+{
+  let state = null
+  const engine = await createVnEngine({ adapter, options: { saveSlots: 4 }, onState: (s) => { state = s } })
+  const rt = engine.runtime
+  await rt.load("017")
+  const d = JSON.parse(fs.readFileSync(path.join(ROOT, "src/common/scn/chunk017.txt"), "utf-8"))
+  const selIdx = d.findIndex(n => n[0] === 4 && n[1][0][0].includes("安抚朝武"))
+  rt.lineIndex = selIdx
+  rt._step()
+  const locked = state.options.find(o => o.jump === "*p8424")
+  check("首周目隐藏线选项置灰（*p8424 enabled=false）", !!locked && locked.enabled === false)
+  const normal = state.options.find(o => o.jump === "*p8419")
+  check("首周目主线选项仍可选（*p8419 enabled=true）", !!normal && normal.enabled !== false)
+}
+
+// 2. 通关任意 1 线后：隐藏线选项解锁
+{
+  let state = null
+  const engine = await createVnEngine({ adapter, options: { saveSlots: 4 }, onState: (s) => { state = s } })
+  const rt = engine.runtime
+  rt.setClears(["芳乃"])
+  await rt.load("017")
+  const d = JSON.parse(fs.readFileSync(path.join(ROOT, "src/common/scn/chunk017.txt"), "utf-8"))
+  const selIdx = d.findIndex(n => n[0] === 4 && n[1][0][0].includes("安抚朝武"))
+  rt.lineIndex = selIdx
+  rt._step()
+  const unlocked = state.options.find(o => o.jump === "*p8424")
+  check("通关 1 线后隐藏线选项可选", !!unlocked && unlocked.enabled !== false)
+}
+
+// 3. 置灰选项 choose 被拒绝（UI 层点击拦截 + 引擎防御）
+{
+  let state = null
+  const engine = await createVnEngine({ adapter, options: { saveSlots: 4 }, onState: (s) => { state = s } })
+  const rt = engine.runtime
+  await rt.load("017")
+  const d = JSON.parse(fs.readFileSync(path.join(ROOT, "src/common/scn/chunk017.txt"), "utf-8"))
+  const selIdx = d.findIndex(n => n[0] === 4 && n[1][0][0].includes("安抚朝武"))
+  rt.lineIndex = selIdx
+  rt._step()
+  rt.choose(state.options.findIndex(o => o.enabled === false))
+  await Promise.resolve()
+  check("choose 置灰项被拒绝（仍停留在选项）", state.showOptions === true)
+}
+
+// 4. 通关记录：芳乃线走完 → clears 含"芳乃"
+{
+  let state = null
+  const engine = await createVnEngine({ adapter, options: { saveSlots: 4 }, onState: (s) => { state = s } })
+  const rt = engine.runtime
+  await rt.load("001")
+  const policy = { "012": [1, 0, 0], "017": [0] }
+  const perScn = {}
+  let steps = 0
+  while (!state.ended && steps < 500000) {
+    steps++
+    if (state.showOptions) {
+      const opts = state.options || []
+      if (!opts.length) { rt.advance(); continue }
+      const n = perScn[state.scnId] = (perScn[state.scnId] || 0)
+      const picks = policy[state.scnId] || []
+      let idx = picks[n] !== undefined ? Math.min(picks[n], opts.length - 1) : 0
+      if (opts[idx] && opts[idx].enabled === false) {
+        idx = opts.findIndex(o => o.enabled !== false)
+        if (idx === -1) idx = 0
+      }
+      perScn[state.scnId]++
+      rt.choose(idx)
+    } else if (state.isTextComplete) { rt.advance() }
+    else { rt.markTextComplete() }
+    await Promise.resolve()
+  }
+  check("芳乃线通关 → clears 记录", rt.clears.includes("芳乃"))
+}
+
+// 5. 后日谈章节清单与数据一致（起始行 = gameend 后一行）
+const EXPECT_AFTER = [
+  ["芳乃", "037", 553], ["茉子", "056", 57], ["丛雨", "077", 498],
+  ["蕾娜", "097", 321], ["小春", "107", 728], ["芦花", "111", 789]
+]
+for (const [name, scn, from] of EXPECT_AFTER) {
+  const d = JSON.parse(fs.readFileSync(path.join(ROOT, `src/common/scn/chunk${scn}.txt`), "utf-8"))
+  const ge = d.findIndex(n => n[0] === 6 && String(n[1]).includes("gameend"))
+  check(`后日谈 ${name} 起始行 = gameend+1（${scn}:${from}）`, ge !== -1 && ge + 1 === from,
+    `实际 gameend@${ge}`)
+}
+
+// 6. 后日谈可从起始行加载推进
+{
+  let state = null
+  const engine = await createVnEngine({ adapter, options: { saveSlots: 4 }, onState: (s) => { state = s } })
+  const rt = engine.runtime
+  await rt.load("037", 553)
+  for (let i = 0; i < 3; i++) {
+    if (state.showOptions || state.ended) break
+    if (state.isTextComplete) rt.advance(); else rt.markTextComplete()
+    await Promise.resolve()
+  }
+  check("芳乃后日谈 037:553 可正常推进", !!state.fullText && state.fullText.length > 0)
+}
+
+// 7. 后日谈结束哨兵：038 末尾 gameend_end → ended
+{
+  let state = null
+  const engine = await createVnEngine({ adapter, options: { saveSlots: 4 }, onState: (s) => { state = s } })
+  const rt = engine.runtime
+  const d = JSON.parse(fs.readFileSync(path.join(ROOT, "src/common/scn/chunk038.txt"), "utf-8"))
+  const endIdx = d.findIndex(n => n[0] === 6 && String(n[1]).toLowerCase().includes("gameend"))
+  await rt.load("038", endIdx)
+  check("后日谈哨兵结束（ended=true）", state.ended === true, `idx=${endIdx}`)
 }
 
 // ---- 汇总 ----
