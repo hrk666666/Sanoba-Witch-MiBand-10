@@ -78,7 +78,7 @@
       <div class="options-container">
         <div
           for="{{ (index, item) in currentOptions }}"
-          class="option-btn"
+          class="option-btn {{ item.enabled === false ? 'option-disabled' : '' }}"
           @click="handleOptionClick(index)"
         >
           <text class="option-text">{{ item.text }}</text>
@@ -193,6 +193,8 @@ export default {
     _engine: null,
     _rt: null,
     _pendingRestore: null,
+    _pendingAfterStory: null,
+    _afterStoryMode: false,
 
     displayText: "",
     currentCharIndex: 0,
@@ -284,15 +286,24 @@ export default {
 
   onShow() {
     const stateToLoad = this.$app.$def.globalGameState
-    this.autoSaveEnabled = !(stateToLoad && stateToLoad._fromLoad)
+    this.autoSaveEnabled = !(stateToLoad && (stateToLoad._fromLoad || stateToLoad._fromAfterStory))
     if (stateToLoad && stateToLoad._fromLoad) {
       delete stateToLoad._fromLoad
+    }
+    if (stateToLoad && stateToLoad._fromAfterStory) {
+      this._pendingAfterStory = stateToLoad._fromAfterStory
+      delete stateToLoad._fromAfterStory
     }
 
     if (stateToLoad) {
       this.$app.$def.globalGameState = null
-      this._pendingRestore = stateToLoad
-      if (this._rt) this.doRestore(stateToLoad)
+      if (this._pendingAfterStory) {
+        this._pendingRestore = null
+        if (this._rt) this.startAfterStory(this._pendingAfterStory)
+      } else {
+        this._pendingRestore = stateToLoad
+        if (this._rt) this.doRestore(stateToLoad)
+      }
     } else if (this._rt && !this._rt.scnId) {
       this.loadDefault()
     }
@@ -300,6 +311,17 @@ export default {
     this.captureOriginalBrightness()
     this.applyKeepScreenOn()
     this.startBottomTime()
+  },
+
+  /** 后日谈模式：从指定场景行开始播放，播到结束哨兵自动回主页 */
+  startAfterStory(a) {
+    this._afterStoryMode = true
+    if (a && a.scn) {
+      this._rt.load(a.scn, a.from || 0).catch(() => {
+        this.displayText = "后日谈加载失败"
+        this._afterStoryMode = false
+      })
+    }
   },
 
   // 记录用户进入游戏前的系统亮度（仅在未被本应用改动前记录一次）
@@ -343,7 +365,17 @@ export default {
         onFx: (name) => this.playFx(name)
       })
       this._rt = this._engine.runtime
-      if (this._pendingRestore) {
+      // 读取通关标记（隐藏线解锁 / 主菜单后日谈入口共用）
+      adapter.storageGet("qlwh_clears").then((v) => {
+        let arr = []
+        try { arr = v ? JSON.parse(v) : [] } catch (e) {}
+        if (this._rt) this._rt.setClears(arr)
+      }).catch(() => {})
+      if (this._pendingAfterStory) {
+        const a = this._pendingAfterStory
+        this._pendingAfterStory = null
+        this.startAfterStory(a)
+      } else if (this._pendingRestore) {
         this.doRestore(this._pendingRestore)
         this._pendingRestore = null
       } else {
@@ -484,6 +516,12 @@ export default {
   advanceLine() {
     if (!this._rt) return
     if (this.ended) {
+      // 后日谈播到结束哨兵：直接返回主页
+      if (this._afterStoryMode) {
+        this._afterStoryMode = false
+        router.back()
+        return
+      }
       prompt.showToast({ message: "游戏结束" })
       return
     }
@@ -493,7 +531,7 @@ export default {
   handleOptionClick(index) {
     this.vibrateIfEnabled()
     const opt = this.currentOptions[index]
-    if (!opt) return
+    if (!opt || opt.enabled === false) return
     this.showOptions = false
     if (this._rt) this._rt.choose(index)
   },
@@ -1106,6 +1144,12 @@ function normalizeSave(s) {
   align-items: center;
 }
 
+/* 置灰选项：隐藏线首周目锁定 */
+.option-disabled {
+  background-color: #3a3f4a;
+  opacity: 0.55;
+}
+
 .option-text {
   color: #ffffff;
   font-size: 20px;
@@ -1267,5 +1311,96 @@ function normalizeSave(s) {
   font-size: 17px;
   font-weight: bold;
   color: #ffffff;
+}
+
+/* 方形屏（手环 10 Pro / 9 Pro / 8 Pro，336x480）：等比缩放因子 1.585 且屏高 480，按 0.923 高度比压缩回等效物理尺寸 */
+@media (shape: rect) {
+  .dialogue-layer {
+    padding: 5px;
+  }
+  .speaker-box {
+    bottom: 110px;
+    padding: 4px 9px;
+    border-radius: 10px;
+  }
+  .speaker-text {
+    font-size: 11px;
+  }
+  .prev-line-btn {
+    padding: 3px 9px;
+    border-radius: 8px;
+  }
+  .prev-line-text {
+    font-size: 9px;
+  }
+  .dialogue-box {
+    bottom: 12px;
+    height: 87px;
+    border-radius: 13px;
+  }
+  .scroll-view {
+    padding: 9px;
+  }
+  .bottom-time {
+    font-size: 9px;
+  }
+  .options-overlay {
+    padding: 8px;
+  }
+  .option-btn {
+    padding: 10px;
+    margin: 4px 0;
+    border-radius: 15px;
+  }
+  .option-text {
+    font-size: 13px;
+  }
+  .control-btn {
+    padding: 5px 11px;
+    border-radius: 10px;
+  }
+  .control-btn-text {
+    font-size: 10px;
+  }
+  .menu-container {
+    padding: 10px;
+    border-radius: 15px;
+  }
+  .menu-time {
+    font-size: 10px;
+  }
+  .menu-title {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .menu-btn {
+    height: 33px;
+    margin-bottom: 5px;
+    border-radius: 15px;
+  }
+  .menu-btn-text {
+    font-size: 12px;
+  }
+  .confirm-dialog {
+    padding: 13px 10px;
+    border-radius: 13px;
+  }
+  .confirm-title {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .confirm-message {
+    font-size: 10px;
+    line-height: 14px;
+    margin-bottom: 12px;
+  }
+  .confirm-btn {
+    height: 26px;
+    margin: 0 3px;
+    border-radius: 13px;
+  }
+  .confirm-btn-text {
+    font-size: 11px;
+  }
 }
 </style>
