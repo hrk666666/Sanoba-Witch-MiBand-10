@@ -92,13 +92,13 @@
         <text class="control-btn-text">{{ isUIHidden ? "显示" : "隐藏" }}</text>
       </div>
       <div
-        class="control-btn"
+        class="control-btn ff-btn"
         ontouchstart="ffTouchStart"
         ontouchmove="ffTouchMove"
         ontouchend="ffTouchEnd"
         if="{{ !isUIHidden }}"
       >
-        <text class="control-btn-text">快进</text>
+        <text class="control-btn-text ff-btn-text">快进</text>
       </div>
     </div>
 
@@ -542,6 +542,7 @@ export default {
 
   stopFastForward() {
     if (this._rt) this._rt.stopFastForward()
+    this.applyKeepScreenOn()
   },
 
   skipToOptions() {
@@ -848,6 +849,9 @@ export default {
   ffTouchStart(event) {
     if (event && event.stopPropagation) event.stopPropagation()
     if (this.showOptions) return
+    try {
+      brightness.setKeepScreenOn({ keepScreenOn: true })
+    } catch (e) {}
     this.ffTouched = true
     this.ffMoved = false
     this.clearFFLongPressTimer()
@@ -1181,6 +1185,18 @@ function normalizeSave(s) {
   font-size: 16px;
 }
 
+.ff-btn {
+  padding: 12px 26px;
+  border-radius: 20px;
+  background-color: rgba(13, 110, 255, 0.75);
+}
+
+.ff-btn-text {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+}
+
 .menu-overlay {
   position: absolute;
   width: 100%;
@@ -1361,6 +1377,13 @@ function normalizeSave(s) {
   }
   .control-btn-text {
     font-size: 10px;
+  }
+  .ff-btn {
+    padding: 7px 16px;
+    border-radius: 12px;
+  }
+  .ff-btn-text {
+    font-size: 12px;
   }
   .menu-container {
     padding: 10px;
