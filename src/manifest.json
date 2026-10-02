@@ -1,8 +1,8 @@
 {
   "package": "com.hrk.qlwh.bandauto",
   "name": "千恋＊万花",
-  "versionName": "1.3.3",
-  "versionCode": 7,
+  "versionName": "1.3.4",
+  "versionCode": 8,
   "minPlatformVersion": 1000,
   "icon": "/common/logo.png",
   "deviceTypeList": [
