@@ -944,6 +944,7 @@ function normalizeSave(s) {
   position: absolute;
   bottom: 0;
   z-index: 3;
+  object-fit: contain;
 }
 
 .sprite-left {
