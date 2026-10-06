@@ -1,12 +1,14 @@
 /**
  * aiotAdapter.js — 小米 Vela 快应用（手环 9/10/11）平台适配
  *
- * 系统模块加载方式说明：
- *  手环 9 / 9 Pro 等旧固件不存在 @app-module/system.audio 模块，
- *  此前在模块顶层无条件加载它，game 页 import 阶段求值异常、
- *  try-catch 覆盖不到，系统兜底重启（现象：点击开始游戏设备必然重启）。
- *  本版本移除 audio 模块加载（手环无扬声器，BGM 本就无声），
- *  file / storage / prompt / vibrator 改回标准 import（上游 9 Pro 原生版验证过的方式）。
+ * 系统模块加载方式说明（尝试方案 B，1.3.6）：
+ *  1.2.x 用 $app_require$("@app-module/...")，1.3.0 改成标准 import "@system.xxx"，
+ *  1.3.5 沿用在手环10上 import 阶段解析不到 → 开游戏即重启。
+ *  现按小米官方文档的第二种写法 const x = require('@system.xxx') 改写：
+ *  官方文档（iot.mi.com/vela/quickapp）明确支持 require 形式，且 require 不做
+ *  ESM default 解包，可规避"部分系统模块无 default 导出 → import 拿到 null"的坑。
+ *  若此方案真机仍重启，则根因更可能在 release 的 --enable-jsc 编译，需另行验证。
+ *  audio 仍保持 null（手环无扬声器、固件无 @system.audio）。
  *
  * 适配器统一暴露：
  *  - readScenario(scnId) -> Promise<Array>   读取剧本（引擎唯一的数据入口）
@@ -18,10 +20,13 @@
 import { ResourceManager } from "./resourceManager.js"
 import { findScenario } from "./platformAdapter.js"
 
-import file from "@system.file"
-import storage from "@system.storage"
-import prompt from "@system.prompt"
-import vibrator from "@system.vibrator"
+// 官方文档推荐的 require 写法：拿到完整模块对象，不做 ESM default interop。
+// 引用：https://iot.mi.com/vela/quickapp/en/features/data/file.html
+//       import file from '@system.file'  // or const file = require('@system.file')
+const file = require("@system.file")
+const storage = require("@system.storage")
+const prompt = require("@system.prompt")
+const vibrator = require("@system.vibrator")
 
 // 手环 9/9 Pro/10 均无扬声器、固件无 @system.audio 模块（官方文档亦无此 API）。
 // 保留 audio 接口桩，引擎调用静默跳过，避免任何设备上崩溃。
