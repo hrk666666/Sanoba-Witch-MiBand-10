@@ -164,7 +164,6 @@ import { vibrateShort } from "../../common/vibrate.js"
 import storage from "@system.storage"
 import router from "@system.router"
 import prompt from "@system.prompt"
-import brightness from "@system.brightness"
 
 const AUTO_SAVE_INTERVAL = 3000
 const AUTO_PLAY_DELAY = 500
@@ -192,7 +191,6 @@ export default {
     _engine: null,
     _rt: null,
     _pendingRestore: null,
-    savedBrightness: null,
 
     displayText: "",
     currentCharIndex: 0,
@@ -237,9 +235,7 @@ export default {
       autoPlayDelay: 500,
       boldText: true,
       autoSave: true,
-      keepScreenOn: false,
       darkMode: false,
-      lowBrightness: false,
       vibration: true
     }
   },
@@ -254,10 +250,6 @@ export default {
     if (this._fxTimer) clearTimeout(this._fxTimer)
     if (this._rt) this._rt.destroy()
 
-    try {
-      brightness.setKeepScreenOn({ keepScreenOn: false })
-    } catch (e) {}
-    this.restoreBrightness()
   },
 
   onHide() {
@@ -267,7 +259,6 @@ export default {
     this.clearPageLongTimer()
     this.clearFFLongPressTimer()
     this.stopBottomTime()
-    this.restoreBrightness()
   },
 
   onInit() {
@@ -300,7 +291,6 @@ export default {
       this.loadDefault()
     }
 
-    this.applyKeepScreenOn()
     this.startBottomTime()
   },
 
@@ -650,7 +640,6 @@ export default {
   toggleAutoPlay() {
     this.vibrateIfEnabled()
     this.isAutoPlay = !this.isAutoPlay
-    this.applyKeepScreenOn()
     if (this.isAutoPlay) {
       prompt.showToast({ message: "自动播放已开启" })
     } else {
@@ -667,37 +656,6 @@ export default {
     }
   },
 
-  applyKeepScreenOn() {
-    const on = this.isAutoPlay || (this.settings && this.settings.keepScreenOn)
-    try {
-      brightness.setKeepScreenOn({ keepScreenOn: !!on })
-    } catch (e) {}
-    // 低亮度模式：开启时记住原亮度并设为 30；关闭时恢复原亮度。
-    // 不再在关闭时强制 128（否则进游戏会把系统亮度拉高，刺眼）。
-    try {
-      if (this.settings && this.settings.lowBrightness) {
-        if (this.savedBrightness == null) {
-          brightness.getValue({
-            success: (d) => { this.savedBrightness = d.value },
-            fail: () => { this.savedBrightness = null }
-          })
-        }
-        brightness.setValue({ value: 30 })
-      } else if (this.savedBrightness != null) {
-        brightness.setValue({ value: this.savedBrightness })
-        this.savedBrightness = null
-      }
-    } catch (e) {}
-  },
-
-  restoreBrightness() {
-    try {
-      if (this.savedBrightness != null) {
-        brightness.setValue({ value: this.savedBrightness })
-        this.savedBrightness = null
-      }
-    } catch (e) {}
-  },
 
   startBottomTime() {
     this.stopBottomTime()
