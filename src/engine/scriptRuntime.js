@@ -74,14 +74,16 @@ export class ScriptRuntime {
    * @param {Object} deps.fx       FxManager 实例
    * @param {Object} deps.config   内容包配置（game.txt 解析结果）
    * @param {Function} deps.onState 状态变更回调 (state) => void
+   * @param {Function} deps.onBeforeScenarioLoad 跨场景切换前回调（UI 借此落自动存档）
    */
-  constructor({ adapter, vars, audio, fx, config, onState }) {
+  constructor({ adapter, vars, audio, fx, config, onState, onBeforeScenarioLoad }) {
     this.adapter = adapter
     this.vars = vars
     this.audio = audio
     this.fx = fx
     this.config = config
     this.onState = onState || (() => {})
+    this.onBeforeScenarioLoad = onBeforeScenarioLoad || (() => {})
 
     // 剧本状态
     this.scriptData = []
@@ -551,6 +553,8 @@ export class ScriptRuntime {
     // label 形如 "scnId@label" 或直接 "label"（当前场景）
     if (label.includes("@")) {
       const [scnId, lab] = label.split("@")
+      // 跨场景切换前先落一次自动存档（防止跳章时卡顿重启丢失进度）
+      this.onBeforeScenarioLoad()
       try {
         const data = await this.adapter.readScenario(scnId)
         this.scriptData = Array.isArray(data) ? data : data.content || []
@@ -572,6 +576,8 @@ export class ScriptRuntime {
   _nextScenario() {
     const nextId = this._resolveNextScn(this.scnId)
     if (nextId) {
+      // 跨场景切换前先落一次自动存档（防止跳章时卡顿重启丢失进度）
+      this.onBeforeScenarioLoad()
       this.load(nextId).catch(() => {
         // 下一场景加载失败（如文件名特殊字符）→ 优雅结束，不崩溃
         this.ended = true
