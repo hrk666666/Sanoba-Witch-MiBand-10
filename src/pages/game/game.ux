@@ -362,7 +362,8 @@ export default {
         adapter,
         options: { saveSlots: 4 },
         onState: (s) => this.syncState(s),
-        onFx: (name) => this.playFx(name)
+        onFx: (name) => this.playFx(name),
+        onBeforeScenarioLoad: () => this.chapterSwitchAutoSave()
       })
       this._rt = this._engine.runtime
       // 读取通关标记（隐藏线解锁 / 主菜单后日谈入口共用）
@@ -451,13 +452,21 @@ export default {
       if (scroll) scroll.scrollTo({ top: 0, behavior: "instant" })
     }
 
+    // 快进：整句直出，跳过逐字渲染（快进无需打字机动画，避免高频渲染）
+    if (this.isFastForwarding) {
+      this.currentCharIndex = this.fullText.length
+      this.finishText()
+      return
+    }
+
     if (this.currentCharIndex < this.fullText.length) {
-      this.displayText += this.fullText.charAt(this.currentCharIndex)
-      this.currentCharIndex++
-      const speed = this.isFastForwarding ? 2 : this.settings.textSpeed
+      // 每 2 字符一帧，渲染频率减半
+      this.displayText += this.fullText.substr(this.currentCharIndex, 2)
+      this.currentCharIndex += 2
+      const speed = this.settings.textSpeed
       this.typeWriterTimer = setTimeout(() => this.startTypeWriter(), speed)
 
-      if (this.currentCharIndex % 5 === 0 && this.displayText.length > 20) {
+      if (this.currentCharIndex % 10 === 0 && this.displayText.length > 20) {
         const sc = this.$element("dialogueScroll")
         if (sc) sc.scrollTo({ top: 9999, behavior: "instant" })
       }
@@ -647,6 +656,13 @@ export default {
   forceAutoSave() {
     if (!this.autoSaveEnabled) return
     if (!this.settings || this.settings.autoSave === false) return
+    this.writeAutoSave()
+    this.lastAutoSaveAt = Date.now()
+  },
+
+  /** 跨章节切换前的进度保护存档：不依赖自动保存开关，无条件落一次 */
+  chapterSwitchAutoSave() {
+    if (!this._rt) return
     this.writeAutoSave()
     this.lastAutoSaveAt = Date.now()
   },
@@ -953,9 +969,10 @@ function normalizeSave(s) {
 }
 
 .sprite-center {
-  left: 50%;
+  left: 0;
+  right: 0;
   height: 100%;
-  transform: translateX(-50%);
+  margin: 0 auto;
 }
 
 .sprite-right {
