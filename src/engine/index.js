@@ -23,9 +23,10 @@ import { FxManager } from "./fxManager.js"
  * @param {Object} deps.adapter 平台适配（createAiotAdapter / createMemoryAdapter 产物）
  * @param {Function} deps.onState 剧本状态回调（UI 绑定）
  * @param {Function} deps.onFx   特效回调（UI 实现动画）
+ * @param {Function} deps.onBeforeScenarioLoad 跨场景切换前回调（UI 落自动存档）
  * @param {Object} deps.options  { volume?, initialVolume? }
  */
-export async function createVnEngine({ adapter, onState, onFx, options = {} }) {
+export async function createVnEngine({ adapter, onState, onFx, options = {}, onBeforeScenarioLoad }) {
   const config = await adapter.readConfig()
 
   const resources = new ResourceManager(config.resources)
@@ -46,7 +47,8 @@ export async function createVnEngine({ adapter, onState, onFx, options = {} }) {
     audio,
     fx,
     config,
-    onState
+    onState,
+    onBeforeScenarioLoad
   })
 
   return { runtime, vars, audio, fx, saves, resources, config }
